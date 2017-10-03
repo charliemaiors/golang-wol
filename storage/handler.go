@@ -47,14 +47,32 @@ func init() {
 	}
 }
 
-func StartHandling(deviceChan chan *types.Alias, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling) {
+func StartHandling(deviceChan chan *types.Alias, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate) {
 
 	for {
 		select {
 		case newDev := <-deviceChan:
 			log.Debugf("%v", newDev)
+			err := addDevice(newDev.Device, newDev.Name)
+			if err != nil {
+				close(newDev.Response)
+			} else {
+				newDev.Response <- struct{}{}
+				close(newDev.Response)
+			}
 		case getDev := <-getChan:
 			log.Debug("%v", getDev)
+			device, err := getDevice(getDev.Alias)
+			if err != nil {
+				close(getDev.Response)
+			} else {
+				getDev.Response <- device
+				close(getDev.Response)
+			}
+		case passHandling := <-passHandlingChan:
+			log.Debug("%v", passHandling)
+		case updatePass := <-updatePassChan:
+			log.Debug("%v", updatePass)
 		}
 	}
 }
