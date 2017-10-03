@@ -4,6 +4,7 @@ import (
 	"bytes"
 	hash "crypto/sha512"
 	"encoding/gob"
+	"errors"
 	"strings"
 
 	storage "github.com/coreos/bbolt"
@@ -46,7 +47,7 @@ func init() {
 	}
 }
 
-func StartHandling(deviceChan chan *types.Alias, getChan chan *types.GetDev) {
+func StartHandling(deviceChan chan *types.Alias, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling) {
 
 	for {
 		select {
@@ -121,15 +122,37 @@ func insertPassword(pass string) error {
 	passHash := hash.New()
 	effectiveHash := passHash.Sum([]byte(pass))
 
-	db.View(func(transaction *storage.Tx) error {
-		if 
-
+	err := db.View(func(transaction *storage.Tx) error {
 		bucket := transaction.Bucket([]byte(passwordBucket))
+		if bucket.Get([]byte(passworkdKey)) != nil {
+			return errors.New("Password already defined")
+		}
+
 		err := bucket.Put([]byte(passworkdKey), effectiveHash)
-		log.Errorf("Got %v for error", err)
+		log.Errorf("Got error? %v", err)
 
 		return err
 	})
+
+	return err
+}
+
+func updatePassword(oldPassword, newPassword string) error {
+	passHash := hash.New()
+	oldPassHash := passHash.Sum([]byte(oldPassword))
+
+	err := db.Update(func(transaction *storage.Tx) error {
+		bucket := transaction.Bucket([]byte(passwordBucket))
+		effectiveOldPassHash := bucket.Get([]byte(passworkdKey))
+		if bytes.Compare(oldPassHash, effectiveOldPassHash) == 0 {
+			passHash.Reset()
+			newPassHash := passHash.Sum([]byte(newPassword))
+			err := bucket.Put([]byte(passworkdKey), newPassHash)
+			return err
+		}
+		return errors.New("Invalid old password")
+	})
+	return err
 }
 
 func encodeFromMacIface(mac, iface string) (*bytes.Buffer, error) {

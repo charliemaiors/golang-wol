@@ -15,3 +15,14 @@ type GetDev struct {
 	Alias    string
 	Response chan *Device
 }
+
+type PasswordHandling struct {
+	Password string
+	Response chan error
+}
+
+type PasswordUpdate struct {
+	OldPassword string
+	NewPassword string
+	Response    chan error
+}
