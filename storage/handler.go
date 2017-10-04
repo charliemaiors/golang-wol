@@ -7,9 +7,9 @@ import (
 	"errors"
 	"strings"
 
+	"bitbucket.org/cmaiorano/golang-wol/types"
 	storage "github.com/coreos/bbolt"
 	log "github.com/sirupsen/logrus"
-	"masinihouse.ddns.net/git/charliemaiors/Golang-Wol/types"
 )
 
 const (
@@ -42,12 +42,18 @@ func init() {
 	})
 
 	if err != nil {
-		log.Errorf("Got erro %v, panic!!!", err)
+		log.Errorf("Got err %v, panic!!!", err)
 		panic(err)
 	}
 }
 
-func StartHandling(deviceChan chan *types.Alias, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate) {
+//StartHandling start an infinite loop in order to handle properly the bbolt database used for alias and password storage
+func StartHandling(initialPassword string, deviceChan chan *types.Alias, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate) {
+
+	err := insertPassword(initialPassword)
+	if err != nil {
+		panic(err)
+	}
 
 	for {
 		select {
@@ -71,8 +77,15 @@ func StartHandling(deviceChan chan *types.Alias, getChan chan *types.GetDev, pas
 			}
 		case passHandling := <-passHandlingChan:
 			log.Debug("%v", passHandling)
+			err := checkPassword(passHandling.Password)
+			passHandling.Response <- err
+			close(passHandling.Response)
+
 		case updatePass := <-updatePassChan:
 			log.Debug("%v", updatePass)
+			err := updatePassword(updatePass.OldPassword, updatePass.NewPassword)
+			updatePass.Response <- err
+			close(updatePass.Response)
 		}
 	}
 }
@@ -119,21 +132,20 @@ func getDevice(name string) (*types.Device, error) {
 	return device, nil
 }
 
-func checkPassword(pass string) bool {
-	ok := false
+func checkPassword(pass string) error {
 	passHash := hash.New()
 	effectiveHash := string(passHash.Sum([]byte(pass)))
 
-	db.View(func(transaction *storage.Tx) error {
+	err := db.View(func(transaction *storage.Tx) error {
 		bucket := transaction.Bucket([]byte(passwordBucket))
 		savedPass := bucket.Get([]byte(passworkdKey))
 		log.Debugf("Got %s for password from bucket", string(savedPass))
 		if strings.Compare(string(savedPass), effectiveHash) == 0 {
-			ok = true
+			return errors.New("Different Password")
 		}
 		return nil
 	})
-	return ok
+	return err
 }
 
 func insertPassword(pass string) error {
