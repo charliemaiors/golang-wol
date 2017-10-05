@@ -21,6 +21,13 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func handleDevices(w http.ResponseWriter, r *http.Request) {
+	if !initialised {
+		redirectToConfig(w, r)
+		return
+	}
+}
+
 func redirectToConfig(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/config", 301)
 }
