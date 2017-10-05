@@ -7,10 +7,14 @@
       <meta name="author" content="Carlo Maiorano">
     </head>
     <body>
-        <div class="container-fluid">
-            <form>
+        <form class="form-horizontal" action="/config" method="POST">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Insert Your Configuration Password Here:</label>
+                <div class="col-sm-10">
+                    <input type="password" class="form-control" name="password" id="configPassword" placeholder="Password">
+                </div>
                 
-            </form>
-        </div>
+            </div>
+        </form>
     </body>
 </html>
