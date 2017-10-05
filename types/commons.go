@@ -26,3 +26,7 @@ type PasswordUpdate struct {
 	NewPassword string
 	Response    chan error
 }
+
+type ResponseError struct {
+	Message string
+}
