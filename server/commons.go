@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"html/template"
+	"net"
 	"net/http"
 	"regexp"
 
@@ -11,11 +12,26 @@ import (
 	wol "github.com/sabhiram/go-wol"
 )
 
+const delims = ":-"
+
 var initialized = false
 var deviceChan = make(chan *types.Alias)
 var getChan = make(chan *types.GetDev)
 var passHandlingChan = make(chan *types.PasswordHandling)
 var updatePassChan = make(chan *types.PasswordUpdate)
+var reMAC = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
+var ifaceList = make([]string, 0, 0)
+
+func init() {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		panic(err)
+	}
+
+	for _, v := range ifaces {
+		ifaceList = append(ifaceList, v.Name)
+	}
+}
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
 	if !initialized {
@@ -28,6 +44,13 @@ func handleDevices(w http.ResponseWriter, r *http.Request) {
 	if !initialized {
 		redirectToConfig(w, r)
 		return
+	}
+	switch r.Method {
+	case "GET":
+
+	case "POST":
+	default:
+		handleError(w, r, errors.New("Not Allowed"), 405)
 	}
 }
 
@@ -55,18 +78,14 @@ func config(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
+	default:
+		handleError(w, r, errors.New("Not Allowed"), 405)
 	}
 }
 
 func registerDevice(alias, mac, iface string) error {
-	matched, err := regexp.MatchString("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac)
-
-	if err != nil {
-		panic(err)
-	}
-
-	if !matched {
-		return errors.New("No valid mac address")
+	if !reMAC.MatchString(mac) {
+		return errors.New("Invalid mac address format")
 	}
 
 	dev := &types.Device{Iface: iface, Mac: mac}
