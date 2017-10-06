@@ -1,0 +1,22 @@
+<html lang="en" >
+    <head>
+      <title>Remote Wake/Sleep-On-LAN</title>
+      <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="description" content="A utility for remotely waking/sleeping a Windows computer via a Raspberry Pi">
+      <meta name="author" content="Carlo Maiorano">
+  
+      <!-- Le styles -->
+      <link href="style/bootstrap/css/bootstrap.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class = "container">
+            <div class = "jumbotron">
+                {{ with .Alias}}     
+                    <h2>Added device {{ .Name }} successfully!!!</h2>
+                    <h4>Using Mac: {{ .Device.MacAddr }} and Iface: {{ .Device.Iface }}</h4>
+                {{ end }}
+            </div>
+        </div>
+    </body>
+</html>
