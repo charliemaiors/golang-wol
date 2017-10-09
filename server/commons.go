@@ -147,6 +147,10 @@ func registerDevice(alias, mac, iface string) (*types.Alias, error) {
 	return aliasStr, nil
 }
 
+func getAllDevices() string {
+
+}
+
 func sendPacket(computerName, localIface string) error {
 	macAddr, bcastAddr := "ciaone", "ciaone"
 	err := wol.SendMagicPacket(macAddr, bcastAddr, localIface)

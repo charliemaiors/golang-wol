@@ -25,8 +25,8 @@
             <label class="col-sm-2 control-label">Select Device:</label>
             <div class="col-sm-10">
               <select  class="form-control" name="devices">
-                {{ range .Alias }}
-                  <option value="{{ .Name }}">{{ .Name }}:{{ .Device.Mac }}</option>
+                {{ range .Aliases }}
+                  <option value="{{ .Value }}">{{ .Value }}</option>
                 {{ end }}
               </select>
             </div>

@@ -48,7 +48,7 @@ func init() {
 }
 
 //StartHandling start an infinite loop in order to handle properly the bbolt database used for alias and password storage
-func StartHandling(initialPassword string, deviceChan chan *types.Alias, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate) {
+func StartHandling(initialPassword string, deviceChan chan *types.Alias, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate, getAliases chan chan string) {
 
 	err := insertPassword(initialPassword)
 	if err != nil {
@@ -86,6 +86,11 @@ func StartHandling(initialPassword string, deviceChan chan *types.Alias, getChan
 			err := updatePassword(updatePass.OldPassword, updatePass.NewPassword)
 			updatePass.Response <- err
 			close(updatePass.Response)
+
+		case aliasChan := <-getAliases:
+			log.Debug("Got all alias request")
+			getAliasesFromStorage(aliasChan)
+			close(aliasChan)
 		}
 	}
 }
@@ -106,6 +111,18 @@ func addDevice(device *types.Device, name string) error {
 		return err
 	})
 	return err
+}
+
+func getAliasesFromStorage(aliasChan chan string) {
+	log.Debugf("Got channel %v for alias retrieving", aliasChan)
+
+	db.View(func(transaction *storage.Tx) error {
+		cursor := transaction.Bucket([]byte(devicesBucket)).Cursor()
+		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			aliasChan <- string(k)
+		}
+		return nil
+	})
 }
 
 func getDevice(name string) (*types.Device, error) {
