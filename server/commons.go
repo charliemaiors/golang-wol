@@ -38,6 +38,16 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		redirectToConfig(w, r)
 		return
 	}
+
+	switch r.Method {
+	case "GET":
+		templ, err := template.ParseFiles("../templates/index.gohtml")
+		templ = template.Must(templ, err)
+
+	case "POST":
+	default:
+		handleError(w, r, errors.New("Method not allowed"), 405)
+	}
 }
 
 func handleDevices(w http.ResponseWriter, r *http.Request) {
