@@ -19,6 +19,7 @@ var deviceChan = make(chan *types.Alias)
 var getChan = make(chan *types.GetDev)
 var passHandlingChan = make(chan *types.PasswordHandling)
 var updatePassChan = make(chan *types.PasswordUpdate)
+var aliasRequestChan = make(chan chan string)
 var reMAC = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
 var ifaceList = make([]string, 0, 0)
 
@@ -43,7 +44,8 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		templ, err := template.ParseFiles("../templates/index.gohtml")
 		templ = template.Must(templ, err)
-
+		aliases := getAllDevices()
+		templ.Execute(w, aliases)
 	case "POST":
 	default:
 		handleError(w, r, errors.New("Method not allowed"), 405)
@@ -92,7 +94,7 @@ func handleConfig(w http.ResponseWriter, r *http.Request) {
 			handleError(w, r, errors.New("Empty Password"), 422)
 			return
 		}
-		go storage.StartHandling(password, deviceChan, getChan, passHandlingChan, updatePassChan)
+		go storage.StartHandling(password, deviceChan, getChan, passHandlingChan, updatePassChan, aliasRequestChan)
 		initialized = true
 		templ, err := template.ParseFiles("templates/config-success.html")
 		templ = template.Must(templ, err)
@@ -147,8 +149,15 @@ func registerDevice(alias, mac, iface string) (*types.Alias, error) {
 	return aliasStr, nil
 }
 
-func getAllDevices() string {
+func getAllDevices() []string {
+	aliasChan := make(chan string)
+	aliasRequestChan <- aliasChan
+	aliases := make([]string, 0, 0)
 
+	for alias := range aliasChan {
+		aliases = append(aliases, alias)
+	}
+	return aliases
 }
 
 func sendPacket(computerName, localIface string) error {
