@@ -47,6 +47,18 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		aliases := getAllDevices()
 		templ.Execute(w, aliases)
 	case "POST":
+		err := r.ParseForm()
+		if err != nil {
+			handleError(w, r, err, 422)
+			return
+		}
+
+		err = checkPassword(r.FormValue("password"))
+		if err != nil {
+			handleError(w, r, err, 401)
+			return
+		}
+
 	default:
 		handleError(w, r, errors.New("Method not allowed"), 405)
 	}
@@ -113,10 +125,9 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, err, 422)
 		return
 	}
-	respChan := make(chan error)
-	pass := &types.PasswordHandling{Password: r.FormValue("password"), Response: respChan}
-	passHandlingChan <- pass
-	err = <-respChan
+
+	err = checkPassword(r.FormValue("password"))
+
 	if err != nil {
 		handleError(w, r, err, 401)
 		return
@@ -131,6 +142,14 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 	templ, err := template.ParseFiles("templates/add-device-success.gohtml")
 	templ = template.Must(templ, err)
 	templ.Execute(w, alias)
+}
+
+func checkPassword(password string) error {
+	respChan := make(chan error)
+	pass := &types.PasswordHandling{Password: password, Response: respChan}
+	passHandlingChan <- pass
+	err := <-respChan
+	return err
 }
 
 func registerDevice(alias, mac, iface string) (*types.Alias, error) {
