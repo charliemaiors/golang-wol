@@ -13,7 +13,7 @@
             <div class = "jumbotron">
                 {{ with .Alias}}     
                     <h2>Added device {{ .Name }} successfully!!!</h2>
-                    <h4>Using Mac: {{ .Device.MacAddr }} and Iface: {{ .Device.Iface }}</h4>
+                    <h4>Using Mac: {{ .Device.MacAddr }} from Iface: {{ .Device.Iface }} with IP: {{ .Device.IP}</h4>
                 {{ end }}
             </div>
         </div>

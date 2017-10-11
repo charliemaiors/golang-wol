@@ -135,7 +135,7 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	alias, regErr := registerDevice(r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ifaces"))
+	alias, regErr := registerDevice(r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ifaces"), r.FormValue("ipAddr"))
 	if regErr != nil {
 		handleError(w, r, err, 422)
 		return
@@ -154,12 +154,12 @@ func checkPassword(password string) error {
 	return err
 }
 
-func registerDevice(alias, mac, iface string) (*types.Alias, error) {
+func registerDevice(alias, mac, iface, ip string) (*types.Alias, error) {
 	if !reMAC.MatchString(mac) {
 		return nil, errors.New("Invalid mac address format")
 	}
 
-	dev := &types.Device{Iface: iface, Mac: mac}
+	dev := &types.Device{Iface: iface, Mac: mac, IP: ip}
 	resp := make(chan struct{}, 1)
 	aliasStr := &types.Alias{Device: dev, Name: alias, Response: resp}
 	deviceChan <- aliasStr
