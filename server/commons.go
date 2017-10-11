@@ -10,6 +10,7 @@ import (
 	"bitbucket.org/cmaiorano/golang-wol/storage"
 	"bitbucket.org/cmaiorano/golang-wol/types"
 	wol "github.com/sabhiram/go-wol"
+	ping "github.com/tatsushid/go-fastping"
 )
 
 const delims = ":-"
@@ -22,6 +23,7 @@ var updatePassChan = make(chan *types.PasswordUpdate)
 var aliasRequestChan = make(chan chan string)
 var reMAC = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
 var ifaceList = make([]string, 0, 0)
+var pinger *ping.Pinger
 
 func init() {
 	ifaces, err := net.Interfaces()
