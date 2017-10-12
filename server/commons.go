@@ -46,21 +46,10 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		templ, err := template.ParseFiles("../templates/index.gohtml")
 		templ = template.Must(templ, err)
-		aliases := getAllDevices()
+		aliases := getAllAliases()
 		templ.Execute(w, aliases)
 	case "POST":
-		err := r.ParseForm()
-		if err != nil {
-			handleError(w, r, err, 422)
-			return
-		}
-
-		err = checkPassword(r.FormValue("password"))
-		if err != nil {
-			handleError(w, r, err, 401)
-			return
-		}
-
+		handleRootPost(w, r)
 	default:
 		handleError(w, r, errors.New("Method not allowed"), 405)
 	}
@@ -121,6 +110,20 @@ func handleConfig(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func handleRootPost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		handleError(w, r, err, 422)
+		return
+	}
+
+	err = checkPassword(r.FormValue("password"))
+	if err != nil {
+		handleError(w, r, err, 401)
+		return
+	}
+}
+
 func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
@@ -170,7 +173,7 @@ func registerDevice(alias, mac, iface, ip string) (*types.Alias, error) {
 	return aliasStr, nil
 }
 
-func getAllDevices() []string {
+func getAllAliases() []string {
 	aliasChan := make(chan string)
 	aliasRequestChan <- aliasChan
 	aliases := make([]string, 0, 0)
@@ -181,9 +184,28 @@ func getAllDevices() []string {
 	return aliases
 }
 
-func sendPacket(computerName, localIface string) error {
-	macAddr, bcastAddr := "ciaone", "ciaone"
-	err := wol.SendMagicPacket(macAddr, bcastAddr, localIface)
+func getDevice(alias string) (*types.Device, error) {
+	response := make(chan *types.Device)
+	getDev := &types.GetDev{Alias: alias, Response: response}
+
+	getChan <- getDev
+	device := <-response
+
+	if device == nil {
+		return device, errors.New("No such device")
+	}
+
+	return device, nil
+}
+
+func sendPacket(computerName string) error {
+	dev, err := getDevice(computerName)
+
+	if err != nil {
+		return err
+	}
+
+	err = wol.SendMagicPacket(dev.Mac, "255.255.255.0", dev.Iface)
 	return err
 }
 
