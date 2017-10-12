@@ -1,15 +1,18 @@
 package server
 
 import (
+	"encoding/binary"
 	"errors"
 	"html/template"
 	"net"
 	"net/http"
 	"regexp"
+	"time"
 
 	"bitbucket.org/cmaiorano/golang-wol/storage"
 	"bitbucket.org/cmaiorano/golang-wol/types"
 	wol "github.com/sabhiram/go-wol"
+	log "github.com/sirupsen/logrus"
 	ping "github.com/tatsushid/go-fastping"
 )
 
@@ -34,6 +37,8 @@ func init() {
 	for _, v := range ifaces {
 		ifaceList = append(ifaceList, v.Name)
 	}
+
+	pinger = ping.NewPinger()
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
@@ -113,15 +118,65 @@ func handleConfig(w http.ResponseWriter, r *http.Request) {
 func handleRootPost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
+		log.Errorf("Got error parsing form %v", err)
 		handleError(w, r, err, 422)
 		return
 	}
 
+	log.Debug("Form parsed")
 	err = checkPassword(r.FormValue("password"))
 	if err != nil {
+		log.Errorf("Got error checking password %v", err)
 		handleError(w, r, err, 401)
 		return
 	}
+
+	log.Debug("Password valid, getting target device")
+	dev, err := getDevice(r.FormValue("devices"))
+	if err != nil {
+		log.Errorf("No device error: %v", err)
+		handleError(w, r, err, 404)
+		return
+	}
+
+	log.Debugf("Found device %v, sending packets", dev)
+	err = sendPacket(dev)
+	if err != nil {
+		log.Errorf("Got error sending packets %v", err)
+		handleError(w, r, err, 500)
+		return
+	}
+
+}
+
+func pingHost(ip string) error {
+	pinger.AddIP(ip)
+	defer pinger.RemoveIP(ip)
+
+	report := make(map[time.Time]string)
+	pinger.OnIdle = func() {
+		report[time.Now()] = "Still sleeping"
+	}
+
+	pinger.OnRecv = func(ip *net.IPAddr, tdur time.Duration) {
+		report[time.Now()] = "Awake!!!"
+		log.Debugf("Got answer from %v", ip.String())
+		pinger.Stop()
+	}
+
+	pinger.RunLoop()
+	ticker := time.NewTicker(time.Millisecond * 30)
+	select {
+	case <-pinger.Done():
+		if err := pinger.Err(); err != nil {
+			log.Fatalf("Ping failed: %v", err)
+		}
+	case <-ticker.C:
+		break
+	}
+	ticker.Stop()
+	pinger.Stop()
+	return nil
 }
 
 func handleDevicePost(w http.ResponseWriter, r *http.Request) {
@@ -198,14 +253,15 @@ func getDevice(alias string) (*types.Device, error) {
 	return device, nil
 }
 
-func sendPacket(computerName string) error {
-	dev, err := getDevice(computerName)
+func sendPacket(dev *types.Device) error {
+
+	bcastAddr, err := getBcastAddr(dev.IP)
 
 	if err != nil {
 		return err
 	}
 
-	err = wol.SendMagicPacket(dev.Mac, "255.255.255.0", dev.Iface)
+	err = wol.SendMagicPacket(dev.Mac, bcastAddr, dev.Iface)
 	return err
 }
 
@@ -217,4 +273,19 @@ func handleError(w http.ResponseWriter, r *http.Request, err error, errCode int)
 	t, err := template.ParseFiles("templates/error.gohtml")
 	t = template.Must(t, err)
 	t.Execute(w, response)
+}
+
+func getBcastAddr(ipAddr string) (string, error) { // works when the n is a prefix, otherwise...
+
+	ipParsed := net.ParseIP("192.168.1.1")
+	mask := ipParsed.DefaultMask()
+
+	n := &net.IPNet{IP: ipParsed, Mask: mask}
+
+	if n.IP.To4() == nil {
+		return "", errors.New("does not support IPv6 addresses")
+	}
+	ip := make(net.IP, len(n.IP.To4()))
+	binary.BigEndian.PutUint32(ip, binary.BigEndian.Uint32(n.IP.To4())|^binary.BigEndian.Uint32(net.IP(n.Mask).To4()))
+	return ip.String(), nil
 }
