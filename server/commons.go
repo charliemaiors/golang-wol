@@ -147,6 +147,16 @@ func handleRootPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debugf("Packet sent, now waiting for wake up")
+	report, pingErr := pingHost(dev.IP)
+	if pingErr != nil {
+		log.Errorf("Got error %v pinging, the executables has right capacity? if no use setcap cap_net_raw=+ep golang-wol", pingErr)
+		handleError(w, r, pingErr, 500)
+		return
+	}
+	wakeupRep := &types.WakeUpReport{Alias: r.FormValue("devices"), Report: report}
+	templ := template.Must(template.New("report.gohtml").ParseFiles("templates/report.gohtml"))
+	templ.Execute(w, wakeupRep)
 }
 
 func handleDevicePost(w http.ResponseWriter, r *http.Request) {
@@ -174,17 +184,17 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 	templ.Execute(w, alias)
 }
 
-func pingHost(ip string) map[time.Time]string {
+func pingHost(ip string) (map[time.Time]bool, error) {
 	pinger.AddIP(ip)
 	defer pinger.RemoveIP(ip)
 
-	report := make(map[time.Time]string)
+	report := make(map[time.Time]bool)
 	pinger.OnIdle = func() {
-		report[time.Now()] = "Still sleeping"
+		report[time.Now()] = false
 	}
 
 	pinger.OnRecv = func(ip *net.IPAddr, tdur time.Duration) {
-		report[time.Now()] = "Awake!!!"
+		report[time.Now()] = true
 		log.Debugf("Got answer from %v", ip.String())
 		pinger.Stop()
 	}
@@ -195,13 +205,15 @@ func pingHost(ip string) map[time.Time]string {
 	case <-pinger.Done():
 		if err := pinger.Err(); err != nil {
 			log.Errorf("Ping failed: %v", err)
+			return nil, err
 		}
+		log.Debugf("Got stop for ping alive!!!")
 	case <-ticker.C:
 		break
 	}
 	ticker.Stop()
 	pinger.Stop()
-	return report
+	return report, nil
 }
 
 func checkPassword(password string) error {

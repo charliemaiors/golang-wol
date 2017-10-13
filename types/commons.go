@@ -1,5 +1,7 @@
 package types
 
+import "time"
+
 //Device is the simple rapresentation of a remote device target of wake up
 type Device struct {
 	Mac   string
@@ -33,6 +35,13 @@ type PasswordUpdate struct {
 	Response    chan error
 }
 
+//ResponseError retrieves particular response error
 type ResponseError struct {
 	Message string
+}
+
+//WakeUpReport represent a report after wake up attempt
+type WakeUpReport struct {
+	Alias  string
+	Report map[time.Time]bool
 }
