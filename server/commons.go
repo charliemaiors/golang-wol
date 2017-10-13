@@ -149,36 +149,6 @@ func handleRootPost(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func pingHost(ip string) error {
-	pinger.AddIP(ip)
-	defer pinger.RemoveIP(ip)
-
-	report := make(map[time.Time]string)
-	pinger.OnIdle = func() {
-		report[time.Now()] = "Still sleeping"
-	}
-
-	pinger.OnRecv = func(ip *net.IPAddr, tdur time.Duration) {
-		report[time.Now()] = "Awake!!!"
-		log.Debugf("Got answer from %v", ip.String())
-		pinger.Stop()
-	}
-
-	pinger.RunLoop()
-	ticker := time.NewTicker(time.Millisecond * 30)
-	select {
-	case <-pinger.Done():
-		if err := pinger.Err(); err != nil {
-			log.Fatalf("Ping failed: %v", err)
-		}
-	case <-ticker.C:
-		break
-	}
-	ticker.Stop()
-	pinger.Stop()
-	return nil
-}
-
 func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
@@ -202,6 +172,36 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 	templ, err := template.ParseFiles("templates/add-device-success.gohtml")
 	templ = template.Must(templ, err)
 	templ.Execute(w, alias)
+}
+
+func pingHost(ip string) map[time.Time]string {
+	pinger.AddIP(ip)
+	defer pinger.RemoveIP(ip)
+
+	report := make(map[time.Time]string)
+	pinger.OnIdle = func() {
+		report[time.Now()] = "Still sleeping"
+	}
+
+	pinger.OnRecv = func(ip *net.IPAddr, tdur time.Duration) {
+		report[time.Now()] = "Awake!!!"
+		log.Debugf("Got answer from %v", ip.String())
+		pinger.Stop()
+	}
+
+	pinger.RunLoop()
+	ticker := time.NewTicker(time.Millisecond * 30)
+	select {
+	case <-pinger.Done():
+		if err := pinger.Err(); err != nil {
+			log.Errorf("Ping failed: %v", err)
+		}
+	case <-ticker.C:
+		break
+	}
+	ticker.Stop()
+	pinger.Stop()
+	return report
 }
 
 func checkPassword(password string) error {
