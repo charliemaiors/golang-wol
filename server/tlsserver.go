@@ -6,7 +6,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-func StartTLS() {
+func StartTLS(alreadyInit bool) {
+	initialized = alreadyInit
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/config", handleConfig)
 	http.HandleFunc("/devices", handleDevices)

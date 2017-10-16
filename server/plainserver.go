@@ -4,7 +4,9 @@ import (
 	"net/http"
 )
 
-func StartNormal() {
+//StartNormal start the plain http server without any encryption
+func StartNormal(alreadyInit bool) {
+	initialized = alreadyInit
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/config", handleConfig)
 	http.HandleFunc("/devices", handleDevices)

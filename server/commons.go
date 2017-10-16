@@ -37,19 +37,23 @@ func init() {
 	for _, v := range ifaces {
 		ifaceList = append(ifaceList, v.Name)
 	}
+	log.Debugf("Initialized? %v", initialized)
 
 	pinger = ping.NewPinger()
+	log.SetLevel(log.DebugLevel)
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
+	log.Debugf("Initialized? %v", initialized)
 	if !initialized {
-		redirectToConfig(w, r)
+		log.Debugln("potato")
+		http.Redirect(w, r, "/config", 301)
 		return
 	}
 
 	switch r.Method {
 	case "GET":
-		templ, err := template.ParseFiles("../templates/index.gohtml")
+		templ, err := template.ParseFiles("templates/index.gohtml")
 		templ = template.Must(templ, err)
 		aliases := getAllAliases()
 		templ.Execute(w, aliases)
@@ -62,7 +66,8 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 func handleDevices(w http.ResponseWriter, r *http.Request) {
 	if !initialized {
-		redirectToConfig(w, r)
+		log.Debugln("pizza")
+		http.Redirect(w, r, "/config", 301)
 		return
 	}
 	switch r.Method {
@@ -81,11 +86,8 @@ func handleDevices(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func redirectToConfig(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/config", 301)
-}
-
 func handleConfig(w http.ResponseWriter, r *http.Request) {
+	log.Debugf("Initialized? %v", initialized)
 	switch r.Method {
 	case "GET": //Got first request, sending back page
 		templ, err := template.ParseFiles("templates/config.html")

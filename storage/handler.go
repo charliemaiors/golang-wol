@@ -24,10 +24,12 @@ const (
 
 var db *storage.DB
 
+func init() {
+	log.SetLevel(log.DebugLevel)
+}
+
 //StartHandling start an infinite loop in order to handle properly the bbolt database used for alias and password storage
 func StartHandling(initialPassword string, deviceChan chan *types.Alias, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate, getAliases chan chan string) {
-
-	initLocal()
 
 	err := insertPassword(initialPassword)
 	if err != nil {
@@ -75,7 +77,7 @@ func StartHandling(initialPassword string, deviceChan chan *types.Alias, getChan
 	}
 }
 
-func initLocal() {
+func InitLocal() {
 	dbLoc := defaultDbLoc
 	if viper.IsSet("storage.path") {
 		dbLoc = viper.GetString("storage.path")
