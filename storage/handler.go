@@ -10,45 +10,23 @@ import (
 	"bitbucket.org/cmaiorano/golang-wol/types"
 	storage "github.com/coreos/bbolt"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 const (
 	devicesBucket  = "DevBucket"
 	passwordBucket = "PassBucket"
 	passworkdKey   = "AdminPassword"
+	dbName         = "rwol.db"
+	defaultDbLoc   = "storage"
 )
 
 var db *storage.DB
 
-func init() {
-	localDB, err := storage.Open("my.db", 0600, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Debugf("Openend database %v, starting bucket definition", localDB)
-	db = localDB
-
-	err = db.Update(func(transaction *storage.Tx) error {
-		if _, createErr := transaction.CreateBucketIfNotExists([]byte(devicesBucket)); createErr != nil {
-			log.Errorf("Error creating devicesBucket: %v", createErr)
-			return createErr
-		}
-		if _, createErr := transaction.CreateBucketIfNotExists([]byte(passwordBucket)); createErr != nil {
-			log.Errorf("Error creating passwordBucket: %v", createErr)
-			return createErr
-		}
-		return nil
-	})
-
-	if err != nil {
-		log.Errorf("Got err %v, panic!!!", err)
-		panic(err)
-	}
-}
-
 //StartHandling start an infinite loop in order to handle properly the bbolt database used for alias and password storage
 func StartHandling(initialPassword string, deviceChan chan *types.Alias, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate, getAliases chan chan string) {
+
+	initLocal()
 
 	err := insertPassword(initialPassword)
 	if err != nil {
@@ -92,6 +70,38 @@ func StartHandling(initialPassword string, deviceChan chan *types.Alias, getChan
 			getAliasesFromStorage(aliasChan)
 			close(aliasChan)
 		}
+	}
+}
+
+func initLocal() {
+	dbLoc := defaultDbLoc
+	if viper.IsSet("storage.path") {
+		dbLoc = viper.GetString("storage.path")
+	}
+
+	localDB, err := storage.Open(dbLoc+"/"+dbName, 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Debugf("Openend database %v, starting bucket definition", localDB)
+	db = localDB
+
+	err = db.Update(func(transaction *storage.Tx) error {
+		if _, createErr := transaction.CreateBucketIfNotExists([]byte(devicesBucket)); createErr != nil {
+			log.Errorf("Error creating devicesBucket: %v", createErr)
+			return createErr
+		}
+		if _, createErr := transaction.CreateBucketIfNotExists([]byte(passwordBucket)); createErr != nil {
+			log.Errorf("Error creating passwordBucket: %v", createErr)
+			return createErr
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Errorf("Got err %v, panic!!!", err)
+		panic(err)
 	}
 }
 

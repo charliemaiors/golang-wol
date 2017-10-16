@@ -22,8 +22,31 @@
       <div class="container">
         <div class ="jumbotron">
           <h1>Report</h1>
-          {{ with }}
-          <h4></h4>
+          {{ with .}}
+          <h4>Summary of {{ .Alias }}:</h4>
+          <table class="table table-bordered">
+          <thead>
+          <tr>
+            <th>Time</th>
+            <th>Result</th>
+          </tr>
+          </thead>
+          <tbody>
+            {{ range $time, $result := .Report }}
+              {{ if $result }}
+                <tr class="success">
+                  <td>{{ $time }}</td>
+                  <td>The device is alive</td>
+                </tr>
+              {{ else  }}
+                <tr class="danger">
+                  <td>{{ $time }}</td>
+                  <td>The device is still sleeping</td>
+                </tr>
+              {{ end }}
+            {{ end }}
+          </tbody>
+          </table>
         </div>
       </div>
     <script src="style/bootstrap/js/bootstrap.min.js"></script>

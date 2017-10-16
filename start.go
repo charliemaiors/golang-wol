@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"bitbucket.org/cmaiorano/golang-wol/config"
 )
 
 func main() {
-	fmt.Print("Ciao")
+	config.Start()
 }
