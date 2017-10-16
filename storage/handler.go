@@ -5,6 +5,7 @@ import (
 	hash "crypto/sha512"
 	"encoding/gob"
 	"errors"
+	"os"
 	"strings"
 
 	"bitbucket.org/cmaiorano/golang-wol/types"
@@ -31,6 +32,7 @@ func StartHandling(initialPassword string, deviceChan chan *types.Alias, getChan
 	err := insertPassword(initialPassword)
 	if err != nil {
 		panic(err)
+		os.Exit(2)
 	}
 
 	for {
@@ -179,7 +181,7 @@ func insertPassword(pass string) error {
 	passHash := hash.New()
 	effectiveHash := passHash.Sum([]byte(pass))
 
-	err := db.View(func(transaction *storage.Tx) error {
+	err := db.Update(func(transaction *storage.Tx) error {
 		bucket := transaction.Bucket([]byte(passwordBucket))
 		if bucket.Get([]byte(passworkdKey)) != nil {
 			return errors.New("Password already defined")

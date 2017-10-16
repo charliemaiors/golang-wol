@@ -38,7 +38,7 @@
                     <label class="col-sm-2 control-label">Interface:</label>
                     <div class="col-sm-10">
                         <select class="form-control" name="ifaces">
-                            {{range $ifaces}}
+                            {{range .}}
                                 <option value= "{{ . }}">{{ . }}</option>
                             {{end}}
                         </select>
