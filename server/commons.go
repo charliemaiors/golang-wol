@@ -46,7 +46,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("Initialized? %v", initialized)
 	if !initialized {
 		log.Error("Potato!!!")
-		http.Redirect(w, r, "/config", 301)
+		http.Redirect(w, r, "/config", 302)
 		return
 	}
 
@@ -67,7 +67,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 func handleDevices(w http.ResponseWriter, r *http.Request) {
 	if !initialized {
 		log.Error("Pizza!!")
-		http.Redirect(w, r, "/config", 301)
+		http.Redirect(w, r, "/config", 302)
 		return
 	}
 	switch r.Method {
@@ -87,7 +87,7 @@ func handleDevices(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleConfig(w http.ResponseWriter, r *http.Request) {
-	log.Debugf("Initialized? %v", initialized)
+	log.Debugf("handleConfig - Initialized? %v", initialized)
 	switch r.Method {
 	case "GET": //Got first request, sending back page
 		templ, err := template.ParseFiles("templates/config.html")
@@ -193,7 +193,7 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 func pingHost(ip string) (map[time.Time]bool, error) {
 	pinger.AddIP(ip)
 	defer pinger.RemoveIP(ip)
-
+	stopped := false
 	report := make(map[time.Time]bool)
 	pinger.OnIdle = func() {
 		report[time.Now()] = false
@@ -202,6 +202,7 @@ func pingHost(ip string) (map[time.Time]bool, error) {
 	pinger.OnRecv = func(ip *net.IPAddr, tdur time.Duration) {
 		report[time.Now()] = true
 		log.Debugf("Got answer from %v", ip.String())
+		stopped = true
 		pinger.Stop()
 	}
 
@@ -218,7 +219,9 @@ func pingHost(ip string) (map[time.Time]bool, error) {
 		break
 	}
 	ticker.Stop()
-	pinger.Stop()
+	if !stopped {
+		pinger.Stop()
+	}
 	return report, nil
 }
 
