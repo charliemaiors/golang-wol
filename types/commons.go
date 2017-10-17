@@ -4,9 +4,8 @@ import "time"
 
 //Device is the simple rapresentation of a remote device target of wake up
 type Device struct {
-	Mac   string
-	Iface string
-	IP    string
+	Mac string
+	IP  string
 }
 
 //Alias is the full structure of device plus a common name used as alias

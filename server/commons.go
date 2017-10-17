@@ -144,7 +144,7 @@ func handleRootPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Debugf("Found device %v, sending packets", dev)
-	err = sendPacket(dev)
+	err = sendPacket(dev.Mac)
 	if err != nil {
 		log.Errorf("Got error sending packets %v", err)
 		handleError(w, r, err, 500)
@@ -178,8 +178,7 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Debugf("New device will be alias: %s macAddr: %s, iface: %s, ipAddr: $s", r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ifaces"), r.FormValue("ipAddr"))
-	alias, regErr := registerDevice(r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ifaces"), r.FormValue("ipAddr"))
+	alias, regErr := registerDevice(r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ipAddr"))
 	if regErr != nil {
 		log.Errorf("Error registering %v", regErr)
 		handleError(w, r, err, 422)
@@ -231,12 +230,12 @@ func checkPassword(password string) error {
 	return err
 }
 
-func registerDevice(alias, mac, iface, ip string) (*types.Alias, error) {
+func registerDevice(alias, mac, ip string) (*types.Alias, error) {
 	if !reMAC.MatchString(mac) {
 		return nil, errors.New("Invalid mac address format")
 	}
 
-	dev := &types.Device{Iface: iface, Mac: mac, IP: ip}
+	dev := &types.Device{Mac: mac, IP: ip}
 	resp := make(chan struct{}, 1)
 	aliasStr := &types.Alias{Device: dev, Name: alias, Response: resp}
 	log.Debugf("Alias is %v", &aliasStr)
@@ -274,15 +273,9 @@ func getDevice(alias string) (*types.Device, error) {
 	return device, nil
 }
 
-func sendPacket(dev *types.Device) error {
+func sendPacket(mac string) error {
 
-	//bcastAddr, err := getBcastAddr(dev.IP)
-
-	// if err != nil {
-	// 	return err
-	// }
-
-	err := wol.SendMagicPacket(dev.Mac, "", "")
+	err := wol.SendMagicPacket(mac, "", "")
 	return err
 }
 
