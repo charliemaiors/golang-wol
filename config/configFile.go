@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"bitbucket.org/cmaiorano/golang-wol/server"
-	"bitbucket.org/cmaiorano/golang-wol/storage"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -32,7 +31,6 @@ func checkAlreadyRun() bool {
 //Start is used to start the service with provided configuration
 func Start() {
 	initialized := checkAlreadyRun()
-	storage.InitLocal()
 	if viper.IsSet("server.tls") {
 		log.Debug("Serving TLS!")
 		server.StartTLS(initialized)

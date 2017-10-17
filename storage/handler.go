@@ -2,11 +2,10 @@ package storage
 
 import (
 	"bytes"
-	hash "crypto/sha512"
 	"encoding/gob"
 	"errors"
-	"os"
-	"strings"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"bitbucket.org/cmaiorano/golang-wol/types"
 	storage "github.com/coreos/bbolt"
@@ -29,12 +28,9 @@ func init() {
 }
 
 //StartHandling start an infinite loop in order to handle properly the bbolt database used for alias and password storage
-func StartHandling(initialPassword string, deviceChan chan *types.Alias, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate, getAliases chan chan string) {
-
-	err := insertPassword(initialPassword)
-	if err != nil {
-		panic(err)
-		os.Exit(2)
+func StartHandling(deviceChan chan *types.Alias, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate, getAliases chan chan string) {
+	if db == nil {
+		db = getDB()
 	}
 
 	for {
@@ -58,7 +54,7 @@ func StartHandling(initialPassword string, deviceChan chan *types.Alias, getChan
 				close(getDev.Response)
 			}
 		case passHandling := <-passHandlingChan:
-			log.Debug("%v", passHandling)
+			log.Debugf("%v", passHandling)
 			err := checkPassword(passHandling.Password)
 			passHandling.Response <- err
 			close(passHandling.Response)
@@ -77,21 +73,13 @@ func StartHandling(initialPassword string, deviceChan chan *types.Alias, getChan
 	}
 }
 
-func InitLocal() {
-	dbLoc := defaultDbLoc
-	if viper.IsSet("storage.path") {
-		dbLoc = viper.GetString("storage.path")
-	}
+//InitLocal initialize db in case is first start of web application
+func InitLocal(initialPassword string) {
 
-	localDB, err := storage.Open(dbLoc+"/"+dbName, 0600, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	db = getDB()
+	log.Debugf("Openend database %v, starting bucket definition", db)
 
-	log.Debugf("Openend database %v, starting bucket definition", localDB)
-	db = localDB
-
-	err = db.Update(func(transaction *storage.Tx) error {
+	err := db.Update(func(transaction *storage.Tx) error {
 		if _, createErr := transaction.CreateBucketIfNotExists([]byte(devicesBucket)); createErr != nil {
 			log.Errorf("Error creating devicesBucket: %v", createErr)
 			return createErr
@@ -107,6 +95,25 @@ func InitLocal() {
 		log.Errorf("Got err %v, panic!!!", err)
 		panic(err)
 	}
+
+	err = insertPassword(initialPassword, false)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func getDB() *storage.DB {
+	dbLoc := defaultDbLoc
+	if viper.IsSet("storage.path") {
+		dbLoc = viper.GetString("storage.path")
+	}
+
+	localDB, err := storage.Open(dbLoc+"/"+dbName, 0600, nil)
+	if err != nil {
+		panic(err)
+	}
+	return localDB
 }
 
 func addDevice(device *types.Device, name string) error {
@@ -133,6 +140,7 @@ func getAliasesFromStorage(aliasChan chan string) {
 	db.View(func(transaction *storage.Tx) error {
 		cursor := transaction.Bucket([]byte(devicesBucket)).Cursor()
 		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			log.Debugf("Device %s", string(k))
 			aliasChan <- string(k)
 		}
 		return nil
@@ -164,33 +172,32 @@ func getDevice(name string) (*types.Device, error) {
 }
 
 func checkPassword(pass string) error {
-	passHash := hash.New()
-	effectiveHash := string(passHash.Sum([]byte(pass)))
 
 	err := db.View(func(transaction *storage.Tx) error {
 		bucket := transaction.Bucket([]byte(passwordBucket))
 		savedPass := bucket.Get([]byte(passworkdKey))
 		log.Debugf("Got %s for password from bucket", string(savedPass))
-		if strings.Compare(string(savedPass), effectiveHash) == 0 {
-			return errors.New("Different Password")
-		}
-		return nil
+		return bcrypt.CompareHashAndPassword(savedPass, []byte(pass))
 	})
 	return err
 }
 
-func insertPassword(pass string) error {
-	passHash := hash.New()
-	effectiveHash := passHash.Sum([]byte(pass))
+func insertPassword(pass string, update bool) error {
+	log.Debugf("Password is %v", pass)
+	passHash := []byte(pass)
+	effectivePasswd, err := bcrypt.GenerateFromPassword(passHash, bcrypt.DefaultCost)
 
-	err := db.Update(func(transaction *storage.Tx) error {
+	if err != nil {
+		panic(err)
+	}
+
+	err = db.Update(func(transaction *storage.Tx) error {
 		bucket := transaction.Bucket([]byte(passwordBucket))
-		if bucket.Get([]byte(passworkdKey)) != nil {
+		if bucket.Get([]byte(passworkdKey)) != nil && !update {
 			return errors.New("Password already defined")
 		}
 
-		err := bucket.Put([]byte(passworkdKey), effectiveHash)
-		log.Errorf("Got error? %v", err)
+		err := bucket.Put([]byte(passworkdKey), effectivePasswd)
 
 		return err
 	})
@@ -199,19 +206,17 @@ func insertPassword(pass string) error {
 }
 
 func updatePassword(oldPassword, newPassword string) error {
-	passHash := hash.New()
-	oldPassHash := passHash.Sum([]byte(oldPassword))
 
 	err := db.Update(func(transaction *storage.Tx) error {
 		bucket := transaction.Bucket([]byte(passwordBucket))
 		effectiveOldPassHash := bucket.Get([]byte(passworkdKey))
-		if bytes.Compare(oldPassHash, effectiveOldPassHash) == 0 {
-			passHash.Reset()
-			newPassHash := passHash.Sum([]byte(newPassword))
-			err := bucket.Put([]byte(passworkdKey), newPassHash)
+		err := bcrypt.CompareHashAndPassword(effectiveOldPassHash, []byte(effectiveOldPassHash))
+		if err != nil {
+			log.Errorf("Got error %v", err)
 			return err
 		}
-		return errors.New("Invalid old password")
+		err = insertPassword(newPassword, true)
+		return err
 	})
 	return err
 }

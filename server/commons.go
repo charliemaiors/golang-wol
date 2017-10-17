@@ -46,7 +46,6 @@ func init() {
 func handleRoot(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("Initialized? %v", initialized)
 	if !initialized {
-		log.Debugln("potato")
 		http.Redirect(w, r, "/config", 301)
 		return
 	}
@@ -66,7 +65,6 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 func handleDevices(w http.ResponseWriter, r *http.Request) {
 	if !initialized {
-		log.Debugln("pizza")
 		http.Redirect(w, r, "/config", 301)
 		return
 	}
@@ -104,7 +102,9 @@ func handleConfig(w http.ResponseWriter, r *http.Request) {
 			handleError(w, r, errors.New("Empty Password"), 422)
 			return
 		}
-		go storage.StartHandling(password, deviceChan, getChan, passHandlingChan, updatePassChan, aliasRequestChan)
+		storage.InitLocal(password)
+		go storage.StartHandling(deviceChan, getChan, passHandlingChan, updatePassChan, aliasRequestChan)
+
 		initialized = true
 		templ, err := template.ParseFiles("templates/config-success.html")
 		templ = template.Must(templ, err)
@@ -177,6 +177,7 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 
 	alias, regErr := registerDevice(r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ifaces"), r.FormValue("ipAddr"))
 	if regErr != nil {
+		log.Errorf("Error registering %v", regErr)
 		handleError(w, r, err, 422)
 		return
 	}
@@ -234,6 +235,7 @@ func registerDevice(alias, mac, iface, ip string) (*types.Alias, error) {
 	dev := &types.Device{Iface: iface, Mac: mac, IP: ip}
 	resp := make(chan struct{}, 1)
 	aliasStr := &types.Alias{Device: dev, Name: alias, Response: resp}
+	log.Debugf("Alias is %v", &aliasStr)
 	deviceChan <- aliasStr
 
 	if _, ok := <-resp; !ok {
