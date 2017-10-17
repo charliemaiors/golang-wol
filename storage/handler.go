@@ -118,7 +118,7 @@ func getDB() *storage.DB {
 
 func addDevice(device *types.Device, name string) error {
 	log.Debugf("Adding device %v with name %s", device, name)
-	buf, err := encodeFromMacIface(device.Mac, device.Iface)
+	buf, err := encodeFromMacIfaceIP(device.Mac, device.Iface, device.IP)
 
 	if err != nil {
 		log.Errorf("Got error encoding: %v", err)
@@ -221,9 +221,9 @@ func updatePassword(oldPassword, newPassword string) error {
 	return err
 }
 
-func encodeFromMacIface(mac, iface string) (*bytes.Buffer, error) {
+func encodeFromMacIfaceIP(mac, iface, IPAddr string) (*bytes.Buffer, error) {
 	buf := bytes.NewBuffer(nil)
-	entry := types.Device{Mac: mac, Iface: iface}
+	entry := types.Device{Mac: mac, Iface: iface, IP: IPAddr}
 	err := gob.NewEncoder(buf).Encode(entry)
 	return buf, err
 }

@@ -52,6 +52,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
+		log.Debug("GOT VALID ROOT REQUEST")
 		templ, err := template.ParseFiles("templates/index.gohtml")
 		templ = template.Must(templ, err)
 		aliases := getAllAliases()
@@ -65,6 +66,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 func handleDevices(w http.ResponseWriter, r *http.Request) {
 	if !initialized {
+		log.Error("Pizza!!")
 		http.Redirect(w, r, "/config", 301)
 		return
 	}
@@ -247,6 +249,7 @@ func registerDevice(alias, mac, iface, ip string) (*types.Alias, error) {
 }
 
 func getAllAliases() []string {
+	log.Debug("GETTING ALL ALIASES")
 	aliasChan := make(chan string)
 	aliasRequestChan <- aliasChan
 	aliases := make([]string, 0, 0)
@@ -273,13 +276,13 @@ func getDevice(alias string) (*types.Device, error) {
 
 func sendPacket(dev *types.Device) error {
 
-	bcastAddr, err := getBcastAddr(dev.IP)
+	//bcastAddr, err := getBcastAddr(dev.IP)
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	err = wol.SendMagicPacket(dev.Mac, bcastAddr, dev.Iface)
+	err := wol.SendMagicPacket(dev.Mac, "", "")
 	return err
 }
 
@@ -297,9 +300,10 @@ func getBcastAddr(ipAddr string) (string, error) { // works when the n is a pref
 
 	ipParsed := net.ParseIP(ipAddr)
 	mask := ipParsed.DefaultMask()
+	log.Debugf("Passed ip: %s, ipParsed: %v, mask: %v", ipAddr, ipParsed, mask)
 
 	n := &net.IPNet{IP: ipParsed, Mask: mask}
-
+	log.Debugf("IpNet: %v", n)
 	if n.IP.To4() == nil {
 		return "", errors.New("does not support IPv6 addresses")
 	}
