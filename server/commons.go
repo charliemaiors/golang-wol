@@ -37,7 +37,6 @@ func init() {
 	for _, v := range ifaces {
 		ifaceList = append(ifaceList, v.Name)
 	}
-	log.Debugf("Initialized? %v", initialized)
 
 	pinger = ping.NewPinger()
 	log.SetLevel(log.DebugLevel)
@@ -46,6 +45,7 @@ func init() {
 func handleRoot(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("Initialized? %v", initialized)
 	if !initialized {
+		log.Error("Potato!!!")
 		http.Redirect(w, r, "/config", 301)
 		return
 	}
@@ -164,6 +164,7 @@ func handleRootPost(w http.ResponseWriter, r *http.Request) {
 func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
+		log.Errorf("Error parsing form %v", err)
 		handleError(w, r, err, 422)
 		return
 	}
@@ -175,6 +176,7 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debugf("New device will be alias: %s macAddr: %s, iface: %s, ipAddr: $s", r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ifaces"), r.FormValue("ipAddr"))
 	alias, regErr := registerDevice(r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ifaces"), r.FormValue("ipAddr"))
 	if regErr != nil {
 		log.Errorf("Error registering %v", regErr)
@@ -293,7 +295,7 @@ func handleError(w http.ResponseWriter, r *http.Request, err error, errCode int)
 
 func getBcastAddr(ipAddr string) (string, error) { // works when the n is a prefix, otherwise...
 
-	ipParsed := net.ParseIP("192.168.1.1")
+	ipParsed := net.ParseIP(ipAddr)
 	mask := ipParsed.DefaultMask()
 
 	n := &net.IPNet{IP: ipParsed, Mask: mask}

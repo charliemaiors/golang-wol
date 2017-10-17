@@ -11,9 +11,9 @@
     <body>
         <div class = "container">
             <div class = "jumbotron">
-                {{ with .Alias}}     
+                {{ with .}}     
                     <h2>Added device {{ .Name }} successfully!!!</h2>
-                    <h4>Using Mac: {{ .Device.MacAddr }} from Iface: {{ .Device.Iface }} with IP: {{ .Device.IP}</h4>
+                    <h4>Using Mac: {{ .Device.Mac }} from Iface: {{ .Device.Iface }} with IP: {{ .Device.IP }}</h4>
                 {{ end }}
             </div>
         </div>
