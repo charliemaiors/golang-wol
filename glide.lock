@@ -1,12 +1,18 @@
 hash: 0d28f8b227848c0bc94f81d2842b0184c4bb6bdb59fb853b7e9ae3089cd65c4c
-updated: 2017-10-11T17:59:13.4443587+02:00
+updated: 2017-10-18T17:40:11.942606+02:00
 imports:
 - name: github.com/coreos/bbolt
   version: 54f6fad6e4859cf6c17d98577f5aab4903c3fdde
+- name: github.com/daaku/go.zipexe
+  version: a5fe2436ffcb3236e175e5149162b41cd28bd27d
 - name: github.com/fsnotify/fsnotify
   version: 4da3e2cfbabc9f751898f250b49f2439785783a1
+- name: github.com/GeertJohan/go.rice
+  version: c02ca9a983da5807ddf7d796784928f5be4afd09
+  subpackages:
+  - embedded
 - name: github.com/hashicorp/hcl
-  version: 42e33e2d55a0ff1d6263f738896ea8c13571a8d0
+  version: 23c074d0eceb2b8a5bfdbb271ab780cde70f05a8
   subpackages:
   - hcl/ast
   - hcl/parser
@@ -16,10 +22,12 @@ imports:
   - json/parser
   - json/scanner
   - json/token
+- name: github.com/kardianos/osext
+  version: ae77be60afb1dcacde03767a8c37337fad28ac14
 - name: github.com/magiconair/properties
   version: 8d7837e64d3c1ee4e54a880c5a920ab4316fc90a
 - name: github.com/mitchellh/mapstructure
-  version: d0303fe809921458f417bcf828397a65db30a7e4
+  version: 06020f85339e21b2478f756a78e295255ffa4d6a
 - name: github.com/pelletier/go-toml
   version: 2009e44b6f182e34d8ce081ac2767622937ea3d4
 - name: github.com/sabhiram/go-wol
@@ -35,17 +43,19 @@ imports:
 - name: github.com/spf13/jwalterweatherman
   version: 12bd96e66386c1960ab0f74ced1362f66f552f7b
 - name: github.com/spf13/pflag
-  version: a9789e855c7696159b7db0db7f440b449edf2b31
+  version: 1f33b80956cde38911d1f23d764deb8d77a649ce
 - name: github.com/spf13/viper
   version: 25b30aa063fc18e48662b86996252eabdcf2f0c7
 - name: github.com/tatsushid/go-fastping
   version: d7bb493dee3e090e2ffb6914adddf17c1e7c026c
 - name: golang.org/x/crypto
-  version: 9419663f5a44be8b34ca85f08abc5fe1be11f8a3
+  version: ed5229da99e3a6df35c756cd64b6982d19505d86
   subpackages:
+  - bcrypt
+  - blowfish
   - ssh/terminal
 - name: golang.org/x/net
-  version: a04bdaca5b32abe1c069418fb7088ae607de5bd0
+  version: 1087133bc4af3073e18add999345c6ae75918503
   subpackages:
   - bpf
   - icmp
@@ -54,12 +64,12 @@ imports:
   - ipv4
   - ipv6
 - name: golang.org/x/sys
-  version: ebfc5b4631820b793c9010c87fd8fef0f39eb082
+  version: 8dbc5d05d6edcc104950cc299a1ce6641235bc86
   subpackages:
   - unix
   - windows
 - name: golang.org/x/text
-  version: 825fc78a2fd6fa0a5447e300189e3219e05e1f25
+  version: c01e4764d870b77f8abe5096ee19ad20d80e8075
   subpackages:
   - transform
   - unicode/norm

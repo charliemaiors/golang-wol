@@ -23,12 +23,23 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
     </head>
     <body>
-        <div class="container">
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">WolServer</a>
+            </div>
+                <ul class="nav navbar-nav">
+                    <li><a href="/">Index</a></li>
+                    <li><a href="/devices">Devices</a></li>
+                    <li><a href="/config">Configuration</a></li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container-fluid">
             <div class="jumbotron">
                 <h2>Error!!!</h2>
                 {{ with . }}
                     <h4>Got error: {{.Message}}</h4>
-                    <h2>Return to <a href="/">home</a></h2>
                 {{ end }}
             </div>
         <div>

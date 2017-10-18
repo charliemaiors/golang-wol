@@ -55,7 +55,19 @@
       <link rel="shortcut icon" href="style/bootstrap/ico/favicon.png">
     </head>
     <body>
-      <div class="container">
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/">WolServer</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/">Index</a></li>
+            <li><a href="/devices">Devices</a></li>
+            <li><a href="/config">Configuration</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="container-fluid">
         <div class ="jumbotron">
           <h1>Report</h1>
           {{ with .}}
