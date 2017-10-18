@@ -1,5 +1,7 @@
 package server
 
+//go:generate rice embed-go
+
 import (
 	"encoding/binary"
 	"errors"
@@ -11,6 +13,7 @@ import (
 
 	"bitbucket.org/cmaiorano/golang-wol/storage"
 	"bitbucket.org/cmaiorano/golang-wol/types"
+	rice "github.com/GeertJohan/go.rice"
 	wol "github.com/sabhiram/go-wol"
 	log "github.com/sirupsen/logrus"
 	ping "github.com/tatsushid/go-fastping"
@@ -27,6 +30,7 @@ var aliasRequestChan = make(chan chan string)
 var reMAC = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
 var ifaceList = make([]string, 0, 0)
 var pinger *ping.Pinger
+var templateBox *rice.Box
 
 func init() {
 	ifaces, err := net.Interfaces()
@@ -38,23 +42,27 @@ func init() {
 		ifaceList = append(ifaceList, v.Name)
 	}
 
+	templateBox, err = rice.FindBox("../templates/")
+	if err != nil {
+		panic(err)
+	}
 	pinger = ping.NewPinger()
 	log.SetLevel(log.DebugLevel)
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
-	log.Debugf("Initialized? %v", initialized)
 	if !initialized {
-		log.Error("Potato!!!")
 		http.Redirect(w, r, "/config", 302)
 		return
 	}
 
 	switch r.Method {
 	case "GET":
-		log.Debug("GOT VALID ROOT REQUEST")
-		templ, err := template.ParseFiles("templates/index.gohtml")
-		templ = template.Must(templ, err)
+		tmpbl, err := templateBox.String("index.gohtml")
+		if err != nil {
+			handleError(w, r, err, 422)
+		}
+		templ := template.Must(template.New("index").Parse(tmpbl))
 		aliases := getAllAliases()
 		templ.Execute(w, aliases)
 	case "POST":
@@ -66,14 +74,16 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 func handleDevices(w http.ResponseWriter, r *http.Request) {
 	if !initialized {
-		log.Error("Pizza!!")
 		http.Redirect(w, r, "/config", 302)
 		return
 	}
 	switch r.Method {
 	case "GET":
-		templ, err := template.ParseFiles("templates/add-device.gohtml")
-		templ = template.Must(templ, err)
+		tmpbl, err := templateBox.String("add-device.gohtml")
+		if err != nil {
+			handleError(w, r, err, 422)
+		}
+		templ := template.Must(template.New("addDev").Parse(tmpbl))
 		err = templ.Execute(w, ifaceList)
 		if err != nil {
 			panic(err)
@@ -90,8 +100,11 @@ func handleConfig(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("handleConfig - Initialized? %v", initialized)
 	switch r.Method {
 	case "GET": //Got first request, sending back page
-		templ, err := template.ParseFiles("templates/config.html")
-		templ = template.Must(templ, err)
+		tmpbl, err := templateBox.String("config.html")
+		if err != nil {
+			handleError(w, r, err, 422)
+		}
+		templ := template.Must(template.New("conf").Parse(tmpbl))
 		templ.Execute(w, nil)
 	case "POST": //Got submit running it!!!
 		err := r.ParseForm()
@@ -108,8 +121,11 @@ func handleConfig(w http.ResponseWriter, r *http.Request) {
 		go storage.StartHandling(deviceChan, getChan, passHandlingChan, updatePassChan, aliasRequestChan)
 
 		initialized = true
-		templ, err := template.ParseFiles("templates/config-success.html")
-		templ = template.Must(templ, err)
+		tmpbl, err := templateBox.String("config-success.html")
+		if err != nil {
+			handleError(w, r, err, 422)
+		}
+		templ := template.Must(template.New("confSucc").Parse(tmpbl))
 		err = templ.Execute(w, nil)
 		if err != nil {
 			panic(err)
@@ -159,7 +175,11 @@ func handleRootPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	wakeupRep := &types.WakeUpReport{Alias: r.FormValue("devices"), Report: report}
-	templ := template.Must(template.New("report.gohtml").ParseFiles("templates/report.gohtml"))
+	tmpbl, err := templateBox.String("report.gohtml")
+	if err != nil {
+		handleError(w, r, err, 422)
+	}
+	templ := template.Must(template.New("rep").Parse(tmpbl))
 	templ.Execute(w, wakeupRep)
 }
 
@@ -185,8 +205,11 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templ, err := template.ParseFiles("templates/add-device-success.gohtml")
-	templ = template.Must(templ, err)
+	tmpbl, err := templateBox.String("add-device-success.gohtml")
+	if err != nil {
+		handleError(w, r, err, 422)
+	}
+	templ := template.Must(template.New("addDevSucc").Parse(tmpbl))
 	templ.Execute(w, alias)
 }
 
@@ -287,9 +310,12 @@ func handleError(w http.ResponseWriter, r *http.Request, err error, errCode int)
 		Message: err.Error(),
 	}
 	w.WriteHeader(errCode)
-	t, err := template.ParseFiles("templates/error.gohtml")
-	t = template.Must(t, err)
-	t.Execute(w, response)
+	tmpbl, err := templateBox.String("error.gohtml")
+	if err != nil {
+		handleError(w, r, err, 422)
+	}
+	templ := template.Must(template.New("error").Parse(tmpbl))
+	templ.Execute(w, response)
 }
 
 func getBcastAddr(ipAddr string) (string, error) { // works when the n is a prefix, otherwise...
