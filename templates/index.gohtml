@@ -20,7 +20,7 @@
                 background-color: #f5f5f5;
             }
 
-            .form-signin {
+            .form-horizontal {
                 max-width: 600px;
                 padding: 19px 29px 29px;
                 margin: 0 auto 20px;
@@ -33,12 +33,12 @@
                 -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
                 box-shadow: 0 1px 2px rgba(0,0,0,.05);
             }
-            .form-signin .form-signin-heading,
-            .form-signin .checkbox {
+            .form-horizontal .form-horizontal-heading,
+            .form-horizontal .checkbox {
                 margin-bottom: 10px;
             }
-            .form-signin input[type="text"],
-            .form-signin input[type="password"] {
+            .form-horizontal input[type="text"],
+            .form-horizontal input[type="password"] {
                 font-size: 16px;
                 height: auto;
                 margin-bottom: 15px;
@@ -61,9 +61,11 @@
     </head>
     <body>
       <div class="container">
-        <form  class="form-signin" action="/" method="POST">
+        <form  class="form-horizontal" action="/" method="POST">
+          <h2 class="form-horizontal-heading">Select Target Device</h2>
+          <p class="form-horizontal-heading">Select wake on lan target</p>
           <div class="form-group">
-            <label class="col-sm-2 control-label">Select Device:</label>
+            <label class="col-sm-3 control-label">Select Device:</label>
             <div class="col-sm-10">
               <select  class="form-control" name="devices">
                 {{ range $ }}
@@ -73,7 +75,7 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-2 control-label">Password:</label>
+            <label class="col-sm-3 control-label">Password:</label>
             <div class="col-sm-10">
               <input type="password" class="form-control" name="password" id="wakeupPassword" placeholder="Password">
             </div>

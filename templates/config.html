@@ -16,7 +16,7 @@
             background-color: #f5f5f5;
         }
 
-        .form-signin {
+        .form-horizontal {
             max-width: 600px;
             padding: 19px 29px 29px;
             margin: 0 auto 20px;
@@ -29,12 +29,12 @@
             -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
             box-shadow: 0 1px 2px rgba(0,0,0,.05);
         }
-        .form-signin .form-signin-heading,
-        .form-signin .checkbox {
+        .form-horizontal .form-horizontal-heading,
+        .form-horizontal .checkbox {
             margin-bottom: 10px;
         }
-        .form-signin input[type="text"],
-        .form-signin input[type="password"] {
+        .form-horizontal input[type="text"],
+        .form-horizontal input[type="password"] {
             font-size: 16px;
             height: auto;
             margin-bottom: 15px;
@@ -49,18 +49,22 @@
       <link href="style/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
     </head>
     <body>
-        <form class="form-signin" action="/config" method="POST">
-            <div class="form-group">
-                <label class="col-sm-2 control-label">Configuration Password</label>
-                <div class="col-sm-10">
-                    <input type="password" class="form-control" name="password" id="configPassword" placeholder="Password">
+        <div class="container">
+            <form class="form-horizontal" action="/config" method="POST">
+                <h2 class="form-horizontal-heading">Configuration</h2>
+                <p class="form-horizontal-heading">Please insert initial password in order to configure the application</p>
+                <div class="form-group">
+                    <label class="col-sm-5 control-label">Configuration Password:</label>
+                    <div class="col-sm-10">
+                        <input type="password" class="form-control" name="password" id="configPassword" placeholder="Password">
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                    <button type="submit" class="btn btn-large btn-primary">Add</button>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="submit" class="btn btn-large btn-primary">Add</button>
+                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </body>
 </html>
