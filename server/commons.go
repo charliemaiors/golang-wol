@@ -1,7 +1,5 @@
 package server
 
-//go:generate rice embed-go
-
 import (
 	"encoding/binary"
 	"errors"
