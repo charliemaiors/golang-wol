@@ -10,9 +10,13 @@ import (
 )
 
 func init() {
-	viper.AddConfigPath("config")
+	viper.AddConfigPath("./config/")
 	viper.AddConfigPath("/etc/wol/")
 	viper.SetConfigName("wol")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Errorf("No config file readed: %v", err)
+	}
 	log.SetLevel(log.DebugLevel)
 }
 
