@@ -183,7 +183,6 @@ func checkPassword(pass string) error {
 }
 
 func insertPassword(pass string, update bool) error {
-	log.Debugf("Password is %v", pass)
 	passHash := []byte(pass)
 	effectivePasswd, err := bcrypt.GenerateFromPassword(passHash, bcrypt.DefaultCost)
 
