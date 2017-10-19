@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 
 	"bitbucket.org/cmaiorano/golang-wol/server"
@@ -15,6 +16,22 @@ func init() {
 	log.SetLevel(log.DebugLevel)
 }
 
+//Start is used to start the service with provided configuration
+func Start() {
+	initialized := checkAlreadyRun()
+
+	if viper.IsSet("server.letsencrypt") {
+		log.Debug("Serving letsencrypt")
+		server.StartLetsEncrypt(initialized)
+	} else if viper.IsSet("server.tls") {
+		log.Debug("Serving TLS!")
+		server.StartTLS(initialized)
+	} else {
+		log.Debug("Serving Plain!")
+		server.StartNormal(initialized)
+	}
+}
+
 func checkAlreadyRun() bool {
 	loc := "storage"
 	if viper.IsSet("storage.path") {
@@ -22,20 +39,24 @@ func checkAlreadyRun() bool {
 	}
 	log.Debugf("Storage location is %s", loc)
 
+	err := checkIfFolderExist(loc)
+	if err != nil { //at least the storage folder could exist or MUST be created
+		panic(err)
+	}
+
 	if _, err := os.Stat(loc + "/rwol.db"); os.IsNotExist(err) {
 		return false
 	}
 	return true
 }
 
-//Start is used to start the service with provided configuration
-func Start() {
-	initialized := checkAlreadyRun()
-	if viper.IsSet("server.tls") {
-		log.Debug("Serving TLS!")
-		server.StartTLS(initialized)
-	} else {
-		log.Debug("Serving Plain!")
-		server.StartNormal(initialized)
+func checkIfFolderExist(loc string) error {
+	info, err := os.Stat(loc)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(loc, os.ModeDir)
+		return err
+	} else if !info.IsDir() {
+		return errors.New("Exist but is not a folder")
 	}
+	return nil
 }

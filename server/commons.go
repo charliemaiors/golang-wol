@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net"
 	"net/http"
+	"os"
 	"regexp"
 	"time"
 
@@ -330,4 +331,15 @@ func getBcastAddr(ipAddr string) (string, error) { // works when the n is a pref
 	ip := make(net.IP, len(n.IP.To4()))
 	binary.BigEndian.PutUint32(ip, binary.BigEndian.Uint32(n.IP.To4())|^binary.BigEndian.Uint32(net.IP(n.Mask).To4()))
 	return ip.String(), nil
+}
+
+func checkIfFolderExist(loc string) error {
+	info, err := os.Stat(loc)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(loc, os.ModeDir)
+		return err
+	} else if !info.IsDir() {
+		return errors.New("Exist but is not a folder")
+	}
+	return nil
 }
