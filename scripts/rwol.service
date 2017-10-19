@@ -1,0 +1,15 @@
+[Unit]
+Description=Wol
+After=syslog.target
+After=network.target
+
+[Service]
+Type=simple
+User=root #needed in order to use letsencrypt
+Group=root
+WorkingDirectory=/home/user #is not mandatory
+ExecStart=/home/user/go/bin/golang-wol
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
