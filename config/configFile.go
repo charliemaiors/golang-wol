@@ -19,7 +19,7 @@ func init() {
 //Start is used to start the service with provided configuration
 func Start() {
 	initialized := checkAlreadyRun()
-
+	log.Debugf("used %s config file", viper.ConfigFileUsed())
 	if viper.IsSet("server.letsencrypt") {
 		log.Debug("Serving letsencrypt")
 		server.StartLetsEncrypt(initialized)
