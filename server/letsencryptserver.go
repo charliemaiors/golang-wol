@@ -37,5 +37,8 @@ func StartLetsEncrypt(alreadyInit bool) {
 		},
 	}
 
-	server.ListenAndServeTLS("", "")
+	err = server.ListenAndServeTLS("", "")
+	if err != nil {
+		panic(err)
+	}
 }
