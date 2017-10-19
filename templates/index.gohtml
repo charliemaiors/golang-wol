@@ -67,7 +67,7 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">Wol</a>
+            <a class="navbar-brand" href="/">Wol</a>
           </div>
 
           <!-- Collect the nav links, forms, and other content for toggling -->
@@ -81,12 +81,12 @@
         </div><!-- /.container-fluid -->
       </nav>
       <div class="container-fluid">
-        <form  class="form-horizontal" action="/" method="POST"> 
+        <form class="form-horizontal" action="/" method="POST"> 
           <h2 class="form-horizontal-heading">Select Target Device</h2>
           <p class="form-horizontal-heading">Select wake on lan target</p>
-          <div class="form-group">
+          <div class="form-group row">
             <label class="col-sm-3 control-label">Select Device:</label>
-            <div class="col-sm-10">
+            <div class="col-sm-8">
               <select  class="form-control" name="devices">
                 {{ range $ }}
                   <option value="{{ . }}">{{ . }}</option>
@@ -94,14 +94,14 @@
               </select>
             </div>
           </div>
-          <div class="form-group">
+          <div class="form-group row">
             <label class="col-sm-3 control-label">Password:</label>
-            <div class="col-sm-10">
+            <div class="col-sm-8">
               <input type="password" class="form-control" name="password" id="wakeupPassword" placeholder="Password">
             </div>
           </div>
            <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
+                <div class="col-sm-offset-4 col-sm-10">
                     <button type="submit" class="btn btn-large btn-primary">Wake Up!</button>
                 </div>
             </div>
