@@ -60,8 +60,8 @@ func configRouter() {
 	router.HandleMethodNotAllowed = true
 	router.MethodNotAllowed = mn
 	router.NotFound = nf
-	router.GET("/devices", handleDevicesGet)
-	router.POST("/devices", handleDevicePost)
+	router.GET("/manage-dev", handleDevicesGet)
+	router.POST("/manage-dev", handleDevicePost)
 	router.GET("/", handleRootGet)
 	router.POST("/", handleRootPost)
 	router.GET("/config", handleConfigGet)
