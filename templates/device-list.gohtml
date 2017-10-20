@@ -73,9 +73,9 @@
             </tr>
             </thead>
             <tbody>
-              {{ range $alias, $netValues := . }}
+              {{ range $index, $dev := . }}
                 <tr class="danger">
-                    <td>{{ $alias }}</td>
+                    <td><a href="/devices/{{ $alias }}">{{ $alias }}</a></td>
                     <td>$netValues.IP</td>
                     <td>$netValues.MacAddr</td>
                     <td><button class="btn btn-large btn-primary"></button>

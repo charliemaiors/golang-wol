@@ -21,17 +21,20 @@ import (
 
 const delims = ":-"
 
-var initialized = false
-var deviceChan = make(chan *types.Alias)
-var getChan = make(chan *types.GetDev)
-var passHandlingChan = make(chan *types.PasswordHandling)
-var updatePassChan = make(chan *types.PasswordUpdate)
-var aliasRequestChan = make(chan chan string)
-var reMAC = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
-var ifaceList = make([]string, 0, 0)
-var pinger *ping.Pinger
-var templateBox *rice.Box
-var router *httprouter.Router
+var (
+	initialized      = false
+	deviceChan       = make(chan *types.AliasResponse)
+	getChan          = make(chan *types.GetDev)
+	passHandlingChan = make(chan *types.PasswordHandling)
+	updatePassChan   = make(chan *types.PasswordUpdate)
+
+	aliasRequestChan = make(chan chan string)
+	reMAC            = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
+	ifaceList        = make([]string, 0, 0)
+	pinger           *ping.Pinger
+	templateBox      *rice.Box
+	router           *httprouter.Router
+)
 
 func init() {
 	ifaces, err := net.Interfaces()
@@ -56,12 +59,15 @@ func init() {
 func configRouter() {
 	mn := &MethodNotAllowed{}
 	nf := &NotFound{}
+
 	router = httprouter.New()
 	router.HandleMethodNotAllowed = true
 	router.MethodNotAllowed = mn
 	router.NotFound = nf
-	router.GET("/manage-dev", handleDevicesGet)
-	router.POST("/manage-dev", handleDevicePost)
+
+	router.GET("/manage-dev", handleManageDevicesGet)
+	router.POST("/manage-dev", handleManageDevicePost)
+	router.GET("/devices", handleDevicesGet)
 	router.GET("/", handleRootGet)
 	router.POST("/", handleRootPost)
 	router.GET("/config", handleConfigGet)
@@ -82,7 +88,7 @@ func handleRootGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	templ.Execute(w, aliases)
 }
 
-func handleDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func handleManageDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if !initialized {
 		http.Redirect(w, r, "/config", 302)
 		return
@@ -105,6 +111,16 @@ func handleConfigGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	}
 	templ := template.Must(template.New("conf").Parse(tmpbl))
 	templ.Execute(w, nil)
+}
+
+func handleDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	devices := getAllDevices()
+	tmpbl, err := templateBox.String("device-list.gohtml")
+	if err != nil {
+		handleError(w, r, err, 422)
+	}
+	templ := template.Must(template.New("conf").Parse(tmpbl))
+	templ.Execute(w, devices)
 }
 
 func handleConfigPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -181,7 +197,7 @@ func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	templ.Execute(w, wakeupRep)
 }
 
-func handleDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func handleManageDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if !initialized {
 		http.Redirect(w, r, "/config", 302)
 		return
@@ -266,9 +282,10 @@ func registerDevice(alias, mac, ip string) (*types.Alias, error) {
 
 	dev := &types.Device{Mac: mac, IP: ip}
 	resp := make(chan struct{}, 1)
-	aliasStr := &types.Alias{Device: dev, Name: alias, Response: resp}
+	aliasStr := &types.Alias{Device: dev, Name: alias}
 	log.Debugf("Alias is %v", &aliasStr)
-	deviceChan <- aliasStr
+	aliasResp := &types.AliasResponse{Alias: *aliasStr, Response: resp}
+	deviceChan <- aliasResp
 
 	if _, ok := <-resp; !ok {
 		return nil, errors.New("Error adding device")
@@ -286,6 +303,20 @@ func getAllAliases() []string {
 		aliases = append(aliases, alias)
 	}
 	return aliases
+}
+
+func getAllDevices() map[string]*types.Device {
+	aliases := getAllAliases()
+	devices := make(map[string]*types.Device)
+
+	for _, alias := range aliases {
+		dev, err := getDevice(alias)
+		if err != nil {
+			log.Errorf("Got error retrieving device %s, cause: %v", alias, err)
+		}
+		devices[alias] = dev
+	}
+	return devices
 }
 
 func getDevice(alias string) (*types.Device, error) {

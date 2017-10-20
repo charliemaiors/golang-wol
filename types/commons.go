@@ -10,8 +10,12 @@ type Device struct {
 
 //Alias is the full structure of device plus a common name used as alias
 type Alias struct {
-	Device   *Device
-	Name     string
+	Device *Device
+	Name   string
+}
+
+type AliasResponse struct {
+	Alias
 	Response chan struct{}
 }
 

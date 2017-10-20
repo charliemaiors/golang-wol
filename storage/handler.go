@@ -28,10 +28,8 @@ func init() {
 }
 
 //StartHandling start an infinite loop in order to handle properly the bbolt database used for alias and password storage
-func StartHandling(deviceChan chan *types.Alias, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate, getAliases chan chan string) {
-	if db == nil {
-		db = getDB()
-	}
+func StartHandling(deviceChan chan *types.AliasResponse, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate, getAliases chan chan string) {
+	db = getDB()
 
 	for {
 		select {
@@ -104,16 +102,20 @@ func InitLocal(initialPassword string) {
 }
 
 func getDB() *storage.DB {
-	dbLoc := defaultDbLoc
-	if viper.IsSet("storage.path") {
-		dbLoc = viper.GetString("storage.path")
-	}
 
-	localDB, err := storage.Open(dbLoc+"/"+dbName, 0600, nil)
-	if err != nil {
-		panic(err)
+	if db == nil {
+		dbLoc := defaultDbLoc
+		if viper.IsSet("storage.path") {
+			dbLoc = viper.GetString("storage.path")
+		}
+
+		localDB, err := storage.Open(dbLoc+"/"+dbName, 0600, nil)
+		if err != nil {
+			panic(err)
+		}
+		return localDB
 	}
-	return localDB
+	return db
 }
 
 func addDevice(device *types.Device, name string) error {
