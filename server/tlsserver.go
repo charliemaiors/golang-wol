@@ -14,10 +14,8 @@ func StartTLS(alreadyInit bool) {
 	if initialized {
 		go storage.StartHandling(deviceChan, getChan, passHandlingChan, updatePassChan, aliasRequestChan)
 	}
-	http.HandleFunc("/", handleRoot)
-	http.HandleFunc("/config", handleConfig)
-	http.HandleFunc("/devices", handleDevices)
-	err := http.ListenAndServeTLS(":5000", viper.GetString("server.tls.cert"), viper.GetString("server.tls.key"), nil)
+
+	err := http.ListenAndServeTLS(":5000", viper.GetString("server.tls.cert"), viper.GetString("server.tls.key"), router)
 	if err != nil {
 		panic(err)
 	}

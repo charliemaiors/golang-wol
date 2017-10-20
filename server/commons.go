@@ -13,6 +13,7 @@ import (
 	"bitbucket.org/cmaiorano/golang-wol/storage"
 	"bitbucket.org/cmaiorano/golang-wol/types"
 	rice "github.com/GeertJohan/go.rice"
+	"github.com/julienschmidt/httprouter"
 	wol "github.com/sabhiram/go-wol"
 	log "github.com/sirupsen/logrus"
 	ping "github.com/tatsushid/go-fastping"
@@ -30,6 +31,7 @@ var reMAC = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]
 var ifaceList = make([]string, 0, 0)
 var pinger *ping.Pinger
 var templateBox *rice.Box
+var router *httprouter.Router
 
 func init() {
 	ifaces, err := net.Interfaces()
@@ -47,94 +49,91 @@ func init() {
 	}
 	pinger = ping.NewPinger()
 	log.SetLevel(log.DebugLevel)
+	configRouter()
+
 }
 
-func handleRoot(w http.ResponseWriter, r *http.Request) {
+func configRouter() {
+	mn := &MethodNotAllowed{}
+	nf := &NotFound{}
+	router = httprouter.New()
+	router.HandleMethodNotAllowed = true
+	router.MethodNotAllowed = mn
+	router.NotFound = nf
+	router.GET("/devices", handleDevicesGet)
+	router.POST("/devices", handleDevicePost)
+	router.GET("/", handleRootGet)
+	router.POST("/", handleRootPost)
+	router.GET("/config", handleConfigGet)
+	router.POST("/config", handleConfigPost)
+}
+
+func handleRootGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if !initialized {
 		http.Redirect(w, r, "/config", 302)
 		return
 	}
-
-	switch r.Method {
-	case "GET":
-		tmpbl, err := templateBox.String("index.gohtml")
-		if err != nil {
-			handleError(w, r, err, 422)
-		}
-		templ := template.Must(template.New("index").Parse(tmpbl))
-		aliases := getAllAliases()
-		templ.Execute(w, aliases)
-	case "POST":
-		handleRootPost(w, r)
-	default:
-		handleError(w, r, errors.New("Method not allowed"), 405)
+	tmpbl, err := templateBox.String("index.gohtml")
+	if err != nil {
+		handleError(w, r, err, 422)
 	}
+	templ := template.Must(template.New("index").Parse(tmpbl))
+	aliases := getAllAliases()
+	templ.Execute(w, aliases)
 }
 
-func handleDevices(w http.ResponseWriter, r *http.Request) {
+func handleDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if !initialized {
 		http.Redirect(w, r, "/config", 302)
 		return
 	}
-	switch r.Method {
-	case "GET":
-		tmpbl, err := templateBox.String("add-device.gohtml")
-		if err != nil {
-			handleError(w, r, err, 422)
-		}
-		templ := template.Must(template.New("addDev").Parse(tmpbl))
-		err = templ.Execute(w, ifaceList)
-		if err != nil {
-			panic(err)
-		}
-	case "POST":
-		handleDevicePost(w, r)
+	tmpbl, err := templateBox.String("add-device.gohtml")
+	if err != nil {
+		handleError(w, r, err, 422)
+	}
+	templ := template.Must(template.New("addDev").Parse(tmpbl))
+	err = templ.Execute(w, ifaceList)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func handleConfigGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	tmpbl, err := templateBox.String("config.html")
+	if err != nil {
+		handleError(w, r, err, 422)
+	}
+	templ := template.Must(template.New("conf").Parse(tmpbl))
+	templ.Execute(w, nil)
+}
+
+func handleConfigPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	err := r.ParseForm()
+	if err != nil {
+		handleError(w, r, err, 422)
 		return
-	default:
-		handleError(w, r, errors.New("Not Allowed"), 405)
+	}
+	password := r.FormValue("password")
+	if password == "" {
+		handleError(w, r, errors.New("Empty Password"), 422)
+		return
+	}
+	storage.InitLocal(password)
+	go storage.StartHandling(deviceChan, getChan, passHandlingChan, updatePassChan, aliasRequestChan)
+
+	initialized = true
+	tmpbl, err := templateBox.String("config-success.html")
+	if err != nil {
+		handleError(w, r, err, 422)
+	}
+	templ := template.Must(template.New("confSucc").Parse(tmpbl))
+	err = templ.Execute(w, nil)
+	if err != nil {
+		panic(err)
 	}
 }
 
-func handleConfig(w http.ResponseWriter, r *http.Request) {
-	log.Debugf("handleConfig - Initialized? %v", initialized)
-	switch r.Method {
-	case "GET": //Got first request, sending back page
-		tmpbl, err := templateBox.String("config.html")
-		if err != nil {
-			handleError(w, r, err, 422)
-		}
-		templ := template.Must(template.New("conf").Parse(tmpbl))
-		templ.Execute(w, nil)
-	case "POST": //Got submit running it!!!
-		err := r.ParseForm()
-		if err != nil {
-			handleError(w, r, err, 422)
-			return
-		}
-		password := r.FormValue("password")
-		if password == "" {
-			handleError(w, r, errors.New("Empty Password"), 422)
-			return
-		}
-		storage.InitLocal(password)
-		go storage.StartHandling(deviceChan, getChan, passHandlingChan, updatePassChan, aliasRequestChan)
-
-		initialized = true
-		tmpbl, err := templateBox.String("config-success.html")
-		if err != nil {
-			handleError(w, r, err, 422)
-		}
-		templ := template.Must(template.New("confSucc").Parse(tmpbl))
-		err = templ.Execute(w, nil)
-		if err != nil {
-			panic(err)
-		}
-	default:
-		handleError(w, r, errors.New("Not Allowed"), 405)
-	}
-}
-
-func handleRootPost(w http.ResponseWriter, r *http.Request) {
+func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	err := r.ParseForm()
 	if err != nil {
 		log.Errorf("Got error parsing form %v", err)
@@ -182,7 +181,12 @@ func handleRootPost(w http.ResponseWriter, r *http.Request) {
 	templ.Execute(w, wakeupRep)
 }
 
-func handleDevicePost(w http.ResponseWriter, r *http.Request) {
+func handleDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	if !initialized {
+		http.Redirect(w, r, "/config", 302)
+		return
+	}
+
 	err := r.ParseForm()
 	if err != nil {
 		log.Errorf("Error parsing form %v", err)

@@ -26,18 +26,16 @@ func StartLetsEncrypt(alreadyInit bool) {
 		Cache:      autocert.DirCache(certDir),   //folder for storing certificates
 	}
 
-	http.HandleFunc("/", handleRoot)
-	http.HandleFunc("/config", handleConfig)
-	http.HandleFunc("/devices", handleDevices)
-
 	server := &http.Server{
 		Addr: ":443", //Different port from 443 could be hard for challenges
 		TLSConfig: &tls.Config{
 			GetCertificate: certManager.GetCertificate,
 		},
+		Handler: router,
 	}
 
 	err = server.ListenAndServeTLS("", "")
+
 	if err != nil {
 		panic(err)
 	}

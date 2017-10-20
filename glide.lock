@@ -1,5 +1,5 @@
 hash: 0d28f8b227848c0bc94f81d2842b0184c4bb6bdb59fb853b7e9ae3089cd65c4c
-updated: 2017-10-18T17:40:11.942606+02:00
+updated: 2017-10-20T12:51:08.9705514+02:00
 imports:
 - name: github.com/coreos/bbolt
   version: 54f6fad6e4859cf6c17d98577f5aab4903c3fdde
@@ -22,6 +22,8 @@ imports:
   - json/parser
   - json/scanner
   - json/token
+- name: github.com/julienschmidt/httprouter
+  version: 975b5c4c7c21c0e3d2764200bf2aa8e34657ae6e
 - name: github.com/kardianos/osext
   version: ae77be60afb1dcacde03767a8c37337fad28ac14
 - name: github.com/magiconair/properties
@@ -49,13 +51,15 @@ imports:
 - name: github.com/tatsushid/go-fastping
   version: d7bb493dee3e090e2ffb6914adddf17c1e7c026c
 - name: golang.org/x/crypto
-  version: ed5229da99e3a6df35c756cd64b6982d19505d86
+  version: 541b9d50ad47e36efd8fb423e938e59ff1691f68
   subpackages:
+  - acme
+  - acme/autocert
   - bcrypt
   - blowfish
   - ssh/terminal
 - name: golang.org/x/net
-  version: 1087133bc4af3073e18add999345c6ae75918503
+  version: aabf50738bcdd9b207582cbe796b59ed65d56680
   subpackages:
   - bpf
   - icmp
