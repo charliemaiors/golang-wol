@@ -68,6 +68,7 @@ func configRouter() {
 	router.GET("/manage-dev", handleManageDevicesGet)
 	router.POST("/manage-dev", handleManageDevicePost)
 	router.GET("/devices", handleDevicesGet)
+	router.GET("/devices/:alias", handleDeviceGet)
 	router.GET("/", handleRootGet)
 	router.POST("/", handleRootPost)
 	router.GET("/config", handleConfigGet)
@@ -121,6 +122,29 @@ func handleDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	}
 	templ := template.Must(template.New("conf").Parse(tmpbl))
 	templ.Execute(w, devices)
+}
+
+func handleDeviceGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	deviceName := ps.ByName("alias")
+	dev, err := getDevice(deviceName)
+	if err != nil {
+		handleError(w, r, err, 404)
+	}
+	alias := types.Alias{Device: dev, Name: deviceName}
+
+	tmpbl, err := templateBox.String("device.gohtml")
+	if err != nil {
+		handleError(w, r, err, 422)
+	}
+	templ := template.Must(template.New("conf").Parse(tmpbl))
+	templ.Execute(w, alias)
+}
+
+func handleDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	err := r.ParseForm()
+	if err != nil {
+		handleError(w, r, err, http.StatusUnprocessableEntity)
+	}
 }
 
 func handleConfigPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -334,7 +358,6 @@ func getDevice(alias string) (*types.Device, error) {
 }
 
 func sendPacket(mac string) error {
-
 	err := wol.SendMagicPacket(mac, "", "")
 	return err
 }

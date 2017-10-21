@@ -55,6 +55,7 @@
         <!--[if lt IE 9]> 
             <script src="style/bootstrap/js/html5shiv.js"></script>
         <![endif]-->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     </head>
     <body>
         <nav class="navbar navbar-default">
@@ -83,8 +84,8 @@
         <div class="container-fluid">
             {{ with . }}
                 <form class="form-horizontal" action="/devices" method="PUT">
-                    <h2 class="form-horizontal-heading">Add a new device</h2>
-                    <p class="form-horizontal-heading">Please fill the form with device data</p>
+                    <h2 class="form-horizontal-heading">Modify device {{ .Alias }}</h2>
+                    <p class="form-horizontal-heading">Please first unlock form, then modify data</p>
                     <div class="form-group row">
                         <label class="col-sm-3 control-label">Password:</label>
                         <div class="col-sm-9">
@@ -111,13 +112,22 @@
                     </div>
                     <div class="form-group">
                         <div class="col-sm-6">
-                            <button type="submit" class="btn btn-large btn-primary">Modify</button>
+                            <button class="btn btn-large btn-primary" onClick="unlockForm()">Modify</button>
                         </div>
                         <div class="col-sm-offset-6 col-sm-6">
-                            <button type="submit" class="btn btn-large btn-primary">Update</button>
+                            <button type="submit" class="btn btn-large btn-primary"  disabled>Update</button>
                         </div>
                     </div>
                 </form>
+                <script>
+                function unlockForm(){
+                    $("#validationPass").prop('disabled', false);
+                    $("#configMacAddr").prop('disabled', false);
+                    $("#configMacAddr").prop('disabled', false);
+                    $("#configAlias").prop('disabled', false);
+                    $(':input[type="submit"]').prop('disabled', false);
+                }
+                </script>
             {{ end }}
         </div>
     </body>
