@@ -4,6 +4,8 @@ import (
 	"crypto/tls"
 	"net/http"
 
+	"bitbucket.org/cmaiorano/golang-wol/storage"
+
 	"github.com/spf13/viper"
 
 	"golang.org/x/crypto/acme/autocert"
@@ -18,6 +20,10 @@ func StartLetsEncrypt(alreadyInit bool) {
 	err := checkIfFolderExist(certDir)
 	if err != nil { //Please insert a valid cert path
 		panic(err)
+	}
+
+	if initialized {
+		go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
 	}
 
 	certManager := autocert.Manager{

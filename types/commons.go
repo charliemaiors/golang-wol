@@ -25,6 +25,12 @@ type GetDev struct {
 	Response chan *Device
 }
 
+//DelDev internal type used for device delete
+type DelDev struct {
+	Alias    string
+	Response chan error
+}
+
 //PasswordHandling is a structure used for password matching
 type PasswordHandling struct {
 	Password string

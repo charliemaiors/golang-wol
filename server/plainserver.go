@@ -10,7 +10,7 @@ import (
 func StartNormal(alreadyInit bool) {
 	initialized = alreadyInit
 	if initialized {
-		go storage.StartHandling(deviceChan, getChan, passHandlingChan, updatePassChan, aliasRequestChan)
+		go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
 	}
 	err := http.ListenAndServe(":5000", router)
 

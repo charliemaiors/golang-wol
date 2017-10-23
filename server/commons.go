@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"html/template"
 	"net"
@@ -27,6 +28,7 @@ var (
 	getChan          = make(chan *types.GetDev)
 	passHandlingChan = make(chan *types.PasswordHandling)
 	updatePassChan   = make(chan *types.PasswordUpdate)
+	delDevChan       = make(chan *types.DelDev)
 
 	aliasRequestChan = make(chan chan string)
 	reMAC            = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
@@ -69,6 +71,7 @@ func configRouter() {
 	router.POST("/manage-dev", handleManageDevicePost)
 	router.GET("/devices", handleDevicesGet)
 	router.GET("/devices/:alias", handleDeviceGet)
+	router.DELETE("/devices", handleDeviceDelete)
 	router.GET("/", handleRootGet)
 	router.POST("/", handleRootPost)
 	router.GET("/config", handleConfigGet)
@@ -77,12 +80,12 @@ func configRouter() {
 
 func handleRootGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if !initialized {
-		http.Redirect(w, r, "/config", 302)
+		http.Redirect(w, r, "/config", http.StatusTemporaryRedirect)
 		return
 	}
 	tmpbl, err := templateBox.String("index.gohtml")
 	if err != nil {
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
 	templ := template.Must(template.New("index").Parse(tmpbl))
 	aliases := getAllAliases()
@@ -91,12 +94,12 @@ func handleRootGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 func handleManageDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if !initialized {
-		http.Redirect(w, r, "/config", 302)
+		http.Redirect(w, r, "/config", http.StatusTemporaryRedirect)
 		return
 	}
 	tmpbl, err := templateBox.String("add-device.gohtml")
 	if err != nil {
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
 	templ := template.Must(template.New("addDev").Parse(tmpbl))
 	err = templ.Execute(w, ifaceList)
@@ -108,7 +111,7 @@ func handleManageDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter
 func handleConfigGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	tmpbl, err := templateBox.String("config.html")
 	if err != nil {
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
 	templ := template.Must(template.New("conf").Parse(tmpbl))
 	templ.Execute(w, nil)
@@ -118,7 +121,7 @@ func handleDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	devices := getAllDevices()
 	tmpbl, err := templateBox.String("device-list.gohtml")
 	if err != nil {
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
 	templ := template.Must(template.New("conf").Parse(tmpbl))
 	templ.Execute(w, devices)
@@ -128,16 +131,42 @@ func handleDeviceGet(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 	deviceName := ps.ByName("alias")
 	dev, err := getDevice(deviceName)
 	if err != nil {
-		handleError(w, r, err, 404)
+		handleError(w, r, err, http.StatusNotFound)
 	}
 	alias := types.Alias{Device: dev, Name: deviceName}
 
 	tmpbl, err := templateBox.String("device.gohtml")
 	if err != nil {
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
 	templ := template.Must(template.New("conf").Parse(tmpbl))
 	templ.Execute(w, alias)
+}
+
+func handleDeviceDelete(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	dec := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+
+	aliasStruct := struct {
+		Alias string `json:"alias"`
+	}{}
+
+	err := dec.Decode(aliasStruct)
+
+	if err != nil {
+		handleError(w, r, err, http.StatusUnprocessableEntity)
+		return
+	}
+	resp := make(chan error)
+	delDev := &types.DelDev{
+		Alias:    aliasStruct.Alias,
+		Response: resp,
+	}
+	delDevChan <- delDev
+	err, ok := <-resp
+	if ok && err != nil {
+		handleError(w, r, err, http.StatusBadGateway)
+	}
 }
 
 func handleDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -150,21 +179,21 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 func handleConfigPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	err := r.ParseForm()
 	if err != nil {
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
 		return
 	}
 	password := r.FormValue("password")
 	if password == "" {
-		handleError(w, r, errors.New("Empty Password"), 422)
+		handleError(w, r, errors.New("Empty Password"), http.StatusUnprocessableEntity)
 		return
 	}
 	storage.InitLocal(password)
-	go storage.StartHandling(deviceChan, getChan, passHandlingChan, updatePassChan, aliasRequestChan)
+	go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
 
 	initialized = true
 	tmpbl, err := templateBox.String("config-success.html")
 	if err != nil {
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
 	templ := template.Must(template.New("confSucc").Parse(tmpbl))
 	err = templ.Execute(w, nil)
@@ -177,7 +206,7 @@ func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	err := r.ParseForm()
 	if err != nil {
 		log.Errorf("Got error parsing form %v", err)
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -185,7 +214,7 @@ func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	err = checkPassword(r.FormValue("password"))
 	if err != nil {
 		log.Errorf("Got error checking password %v", err)
-		handleError(w, r, err, 401)
+		handleError(w, r, err, http.StatusUnauthorized)
 		return
 	}
 
@@ -193,7 +222,7 @@ func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	dev, err := getDevice(r.FormValue("devices"))
 	if err != nil {
 		log.Errorf("No device error: %v", err)
-		handleError(w, r, err, 404)
+		handleError(w, r, err, http.StatusNotFound)
 		return
 	}
 
@@ -201,7 +230,7 @@ func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	err = sendPacket(dev.Mac)
 	if err != nil {
 		log.Errorf("Got error sending packets %v", err)
-		handleError(w, r, err, 500)
+		handleError(w, r, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -209,13 +238,13 @@ func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	report, pingErr := pingHost(dev.IP)
 	if pingErr != nil {
 		log.Errorf("Got error %v pinging, the executables has right capacity? if no use setcap cap_net_raw=+ep golang-wol", pingErr)
-		handleError(w, r, pingErr, 500)
+		handleError(w, r, pingErr, http.StatusInternalServerError)
 		return
 	}
 	wakeupRep := &types.WakeUpReport{Alias: r.FormValue("devices"), Report: report}
 	tmpbl, err := templateBox.String("report.gohtml")
 	if err != nil {
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
 	templ := template.Must(template.New("rep").Parse(tmpbl))
 	templ.Execute(w, wakeupRep)
@@ -223,34 +252,35 @@ func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 
 func handleManageDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if !initialized {
-		http.Redirect(w, r, "/config", 302)
+		http.Redirect(w, r, "/config", http.StatusTemporaryRedirect)
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
 		log.Errorf("Error parsing form %v", err)
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
 		return
 	}
 
 	err = checkPassword(r.FormValue("password"))
 
 	if err != nil {
-		handleError(w, r, err, 401)
+		handleError(w, r, err, http.StatusUnauthorized)
 		return
 	}
 
 	alias, regErr := registerDevice(r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ipAddr"))
 	if regErr != nil {
 		log.Errorf("Error registering %v", regErr)
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
 		return
 	}
 
 	tmpbl, err := templateBox.String("add-device-success.gohtml")
 	if err != nil {
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
+		return
 	}
 	templ := template.Must(template.New("addDevSucc").Parse(tmpbl))
 	templ.Execute(w, alias)
@@ -369,7 +399,7 @@ func handleError(w http.ResponseWriter, r *http.Request, err error, errCode int)
 	w.WriteHeader(errCode)
 	tmpbl, err := templateBox.String("error.gohtml")
 	if err != nil {
-		handleError(w, r, err, 422)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
 	templ := template.Must(template.New("error").Parse(tmpbl))
 	templ.Execute(w, response)

@@ -12,7 +12,7 @@ import (
 func StartTLS(alreadyInit bool) {
 	initialized = alreadyInit
 	if initialized {
-		go storage.StartHandling(deviceChan, getChan, passHandlingChan, updatePassChan, aliasRequestChan)
+		go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
 	}
 
 	err := http.ListenAndServeTLS(":5000", viper.GetString("server.tls.cert"), viper.GetString("server.tls.key"), router)

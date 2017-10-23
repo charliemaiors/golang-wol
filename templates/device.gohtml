@@ -111,14 +111,33 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             <button class="btn btn-large btn-primary" onClick="unlockForm()">Modify</button>
                         </div>
-                        <div class="col-sm-offset-6 col-sm-6">
+                        <div class="col-sm-offset-4 col-sm-4">
                             <button type="submit" class="btn btn-large btn-primary"  disabled>Update</button>
+                        </div>
+                        <div class="col-sm-offset-4 col-sm-4">
+                            <button class="btn btn-large btn-primary" onClick="deleteDev()">Delete</button>
                         </div>
                     </div>
                 </form>
+                <script>
+                function deleteDev(){
+                    var data = {
+                        "alias": $("#configAlias").val()
+                    }
+                    $.ajax({
+                        type:"DELETE",
+                        url: "/devices",
+                        data: data,
+                        dataType: "json",
+                        success: function(){
+                            window.location.href = "/devices";
+                        }
+                    }) 
+                }
+                </script>
                 <script>
                 function unlockForm(){
                     $("#validationPass").prop('disabled', false);

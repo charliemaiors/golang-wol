@@ -28,45 +28,23 @@ func init() {
 }
 
 //StartHandling start an infinite loop in order to handle properly the bbolt database used for alias and password storage
-func StartHandling(deviceChan chan *types.AliasResponse, getChan chan *types.GetDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate, getAliases chan chan string) {
+func StartHandling(deviceChan chan *types.AliasResponse, getChan chan *types.GetDev, delDevChan chan *types.DelDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate, getAliases chan chan string) {
 	db = getDB()
 
 	for {
 		select {
 		case newDev := <-deviceChan:
-			log.Debugf("%v", newDev)
-			err := addDevice(newDev.Device, newDev.Name)
-			if err != nil {
-				close(newDev.Response)
-			} else {
-				newDev.Response <- struct{}{}
-				close(newDev.Response)
-			}
+			handleNewDevice(newDev)
 		case getDev := <-getChan:
-			log.Debug("%v", getDev)
-			device, err := getDevice(getDev.Alias)
-			if err != nil {
-				close(getDev.Response)
-			} else {
-				getDev.Response <- device
-				close(getDev.Response)
-			}
+			handleGetDev(getDev)
+		case delDev := <-delDevChan:
+			handleDeviceDel(delDev)
 		case passHandling := <-passHandlingChan:
-			log.Debugf("%v", passHandling)
-			err := checkPassword(passHandling.Password)
-			passHandling.Response <- err
-			close(passHandling.Response)
-
+			handlePass(passHandling)
 		case updatePass := <-updatePassChan:
-			log.Debug("%v", updatePass)
-			err := updatePassword(updatePass.OldPassword, updatePass.NewPassword)
-			updatePass.Response <- err
-			close(updatePass.Response)
-
+			handleUpdatePass(updatePass)
 		case aliasChan := <-getAliases:
-			log.Debug("Got all alias request")
-			getAliasesFromStorage(aliasChan)
-			close(aliasChan)
+			handleAliasRequest(aliasChan)
 		}
 	}
 }
@@ -99,6 +77,56 @@ func InitLocal(initialPassword string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func handleNewDevice(newDev *types.AliasResponse) {
+	log.Debugf("%v", newDev)
+	err := addDevice(newDev.Device, newDev.Name)
+	if err != nil {
+		close(newDev.Response)
+	} else {
+		newDev.Response <- struct{}{}
+		close(newDev.Response)
+	}
+}
+
+func handleGetDev(getDev *types.GetDev) {
+	log.Debug("%v", getDev)
+	device, err := getDevice(getDev.Alias)
+	if err != nil {
+		close(getDev.Response)
+	} else {
+		getDev.Response <- device
+		close(getDev.Response)
+	}
+}
+
+func handleDeviceDel(delDev *types.DelDev) {
+	err := deleteDevice(delDev.Alias)
+	if err != nil {
+		delDev.Response <- err
+	}
+	close(delDev.Response)
+}
+
+func handlePass(passHandling *types.PasswordHandling) {
+	log.Debugf("%v", passHandling)
+	err := checkPassword(passHandling.Password)
+	passHandling.Response <- err
+	close(passHandling.Response)
+}
+
+func handleUpdatePass(updatePass *types.PasswordUpdate) {
+	log.Debug("%v", updatePass)
+	err := updatePassword(updatePass.OldPassword, updatePass.NewPassword)
+	updatePass.Response <- err
+	close(updatePass.Response)
+}
+
+func handleAliasRequest(aliasChan chan string) {
+	log.Debug("Got all alias request")
+	getAliasesFromStorage(aliasChan)
+	close(aliasChan)
 }
 
 func getDB() *storage.DB {
@@ -203,6 +231,15 @@ func insertPassword(pass string, update bool) error {
 		return err
 	})
 
+	return err
+}
+
+func deleteDevice(alias string) error {
+	err := db.Update(func(transaction *storage.Tx) error {
+		bucket := transaction.Bucket([]byte(devicesBucket))
+		err := bucket.Delete([]byte(alias))
+		return err
+	})
 	return err
 }
 
