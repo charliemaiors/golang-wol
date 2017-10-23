@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/binary"
-	"encoding/json"
 	"errors"
 	"html/template"
 	"net"
@@ -71,7 +70,7 @@ func configRouter() {
 	router.POST("/manage-dev", handleManageDevicePost)
 	router.GET("/devices", handleDevicesGet)
 	router.GET("/devices/:alias", handleDeviceGet)
-	router.DELETE("/devices", handleDeviceDelete)
+	router.DELETE("/devices/:alias", handleDeviceDelete)
 	router.GET("/", handleRootGet)
 	router.POST("/", handleRootPost)
 	router.GET("/config", handleConfigGet)
@@ -123,43 +122,36 @@ func handleDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	if err != nil {
 		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
-	templ := template.Must(template.New("conf").Parse(tmpbl))
+	templ := template.Must(template.New("devsGet").Parse(tmpbl))
 	templ.Execute(w, devices)
 }
 
 func handleDeviceGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	deviceName := ps.ByName("alias")
+	log.Debugf("Getting data for %s", deviceName)
 	dev, err := getDevice(deviceName)
 	if err != nil {
+		log.Errorf("Got error finding device %v", err)
 		handleError(w, r, err, http.StatusNotFound)
+		return
 	}
 	alias := types.Alias{Device: dev, Name: deviceName}
 
 	tmpbl, err := templateBox.String("device.gohtml")
 	if err != nil {
-		handleError(w, r, err, http.StatusUnprocessableEntity)
-	}
-	templ := template.Must(template.New("conf").Parse(tmpbl))
-	templ.Execute(w, alias)
-}
-
-func handleDeviceDelete(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	dec := json.NewDecoder(r.Body)
-	defer r.Body.Close()
-
-	aliasStruct := struct {
-		Alias string `json:"alias"`
-	}{}
-
-	err := dec.Decode(aliasStruct)
-
-	if err != nil {
+		log.Errorf("Got error getting template %v", err)
 		handleError(w, r, err, http.StatusUnprocessableEntity)
 		return
 	}
+	templ := template.Must(template.New("devGet").Parse(tmpbl))
+	templ.Execute(w, alias)
+}
+
+func handleDeviceDelete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	alias := ps.ByName("alias")
 	resp := make(chan error)
 	delDev := &types.DelDev{
-		Alias:    aliasStruct.Alias,
+		Alias:    alias,
 		Response: resp,
 	}
 	delDevChan <- delDev

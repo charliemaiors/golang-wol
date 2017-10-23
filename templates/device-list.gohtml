@@ -5,8 +5,6 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="description" content="A utility for remotely waking/sleeping a Windows computer via a Raspberry Pi">
       <meta name="author" content="Carlo Maiorano">
-      <link href="style/bootstrap/css/bootstrap.css" rel="stylesheet">
-      <link href="style/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
       <meta http-equiv="cache-control" content="max-age=0" />
       <meta http-equiv="cache-control" content="no-cache" />
       <meta http-equiv="expires" content="0" />
@@ -22,6 +20,9 @@
         }
 
       </style>
+      <!-- jQuery!!! -->
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
       <!-- Latest compiled and minified CSS -->
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
@@ -52,8 +53,13 @@
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-              <li class="active"><a href="/">Home <span class="sr-only">(current)</span></a></li>
-              <li><a href="/devices">Devices</a></li>
+              <li><a href="/">Home<span class="sr-only">(current)</span></a></li>
+               <li class="active dropdown">
+                <a href="/devices" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Devices<span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li><a href="/manage-dev">Add Device</a></li>
+                </ul>
+              </li>
               <li><a href="/config">Configuration</a></li>
             </ul>
           </div><!-- /.navbar-collapse -->
@@ -69,16 +75,14 @@
               <th>Alias</th>
               <th>IP</th>
               <th>Mac Address</th>
-              <th>Action</th>
             </tr>
             </thead>
             <tbody>
-              {{ range $index, $dev := . }}
-                <tr class="danger">
+              {{ range $alias, $dev := . }}
+                <tr class="info">
                     <td><a href="/devices/{{ $alias }}">{{ $alias }}</a></td>
-                    <td>$netValues.IP</td>
-                    <td>$netValues.MacAddr</td>
-                    <td><button class="btn btn-large btn-primary"></button>
+                    <td>{{ $dev.IP }}</td>
+                    <td>{{ $dev.Mac }}</td>
                 </tr>
               {{ end }}
             </tbody>

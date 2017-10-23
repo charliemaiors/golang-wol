@@ -43,6 +43,9 @@
             padding: 7px 9px;
         }
         </style>
+        <!-- jQuery!!! -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
@@ -55,7 +58,30 @@
         <!--[if lt IE 9]> 
             <script src="style/bootstrap/js/html5shiv.js"></script>
         <![endif]-->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script>
+            $(document).ready(function(){
+                $('#modifyBtn').click(function (event){
+                    $('#validationPass').prop('disabled', false);
+                    $('#configMacAddr').prop('disabled', false);
+                    $('#configIP').prop('disabled', false);
+                    $('#configAlias').prop('disabled', false);
+                    $(':input[type="submit"]').prop('disabled', false);
+                    event.preventDefault()
+                })
+                
+                $('#dltBtn').click(function(event){
+                    event.preventDefault()  
+
+                    $.ajax({
+                        type:"DELETE",
+                        url: window.location.href,
+                        dataType: "json",
+                        success: $.noop
+                    })
+                    window.location = window.location.host + "/devices";
+                })
+            })
+        </script>
     </head>
     <body>
         <nav class="navbar navbar-default">
@@ -84,7 +110,7 @@
         <div class="container-fluid">
             {{ with . }}
                 <form class="form-horizontal" action="/devices" method="PUT">
-                    <h2 class="form-horizontal-heading">Modify device {{ .Alias }}</h2>
+                    <h2 class="form-horizontal-heading">Modify device {{ .Name }}</h2>
                     <p class="form-horizontal-heading">Please first unlock form, then modify data</p>
                     <div class="form-group row">
                         <label class="col-sm-3 control-label">Password:</label>
@@ -101,52 +127,27 @@
                     <div class="form-group row">
                         <label class="col-sm-3 control-label">IP Address:</label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" name="ipAddr" id="configMacAddr" value="{{ .Device.IP }}" disabled>
+                            <input type="text" class="form-control" name="ipAddr" id="configIP" value="{{ .Device.IP }}" disabled>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-3 control-label">Alias:</label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" name="alias" id="configAlias" value="{{ .Alias }}" disabled>
+                            <input type="text" class="form-control" name="alias" id="configAlias" value="{{ .Name }}" disabled>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <div class="col-sm-4">
-                            <button class="btn btn-large btn-primary" onClick="unlockForm()">Modify</button>
+                    <div class="form-group row">
+                        <div id="modifyBtn" class="col-sm-4">
+                            <button class="btn btn-large btn-primary">Modify</button>
                         </div>
-                        <div class="col-sm-offset-4 col-sm-4">
-                            <button type="submit" class="btn btn-large btn-primary"  disabled>Update</button>
+                        <div class="col-sm-offset-3 col-sm-4" >
+                            <button type="submit" class="btn btn-large btn-primary" disabled>Update</button>
                         </div>
-                        <div class="col-sm-offset-4 col-sm-4">
-                            <button class="btn btn-large btn-primary" onClick="deleteDev()">Delete</button>
+                        <div id="dltBtn" class="col-sm-offset-3 col-sm-4">
+                            <button class="btn btn-large btn-primary">Delete</button>
                         </div>
                     </div>
-                </form>
-                <script>
-                function deleteDev(){
-                    var data = {
-                        "alias": $("#configAlias").val()
-                    }
-                    $.ajax({
-                        type:"DELETE",
-                        url: "/devices",
-                        data: data,
-                        dataType: "json",
-                        success: function(){
-                            window.location.href = "/devices";
-                        }
-                    }) 
-                }
-                </script>
-                <script>
-                function unlockForm(){
-                    $("#validationPass").prop('disabled', false);
-                    $("#configMacAddr").prop('disabled', false);
-                    $("#configMacAddr").prop('disabled', false);
-                    $("#configAlias").prop('disabled', false);
-                    $(':input[type="submit"]').prop('disabled', false);
-                }
-                </script>
+                </form>               
             {{ end }}
         </div>
     </body>
