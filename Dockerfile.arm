@@ -4,7 +4,7 @@ WORKDIR /go/src/bitbucket.org/cmaiorano/golang-wol
 RUN GOOS=linux GOARCH=arm go build -o golang-wol wolsrv.go
 
 FROM resin/scratch
-COPY --from=0 /go/golang-wol .
+COPY --from=0 /go/src/bitbucket.org/cmaiorano/golang-wol/golang-wol .
 VOLUME /config
 VOLUME /certs
 EXPOSE 443 5000
