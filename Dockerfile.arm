@@ -3,9 +3,12 @@ COPY . /go/src/bitbucket.org/cmaiorano/golang-wol
 WORKDIR /go/src/bitbucket.org/cmaiorano/golang-wol
 RUN GOOS=linux GOARCH=arm go build -o golang-wol wolsrv.go
 
-FROM resin/scratch
+FROM resin/armhf-alpine
+RUN apk --no-cache add ca-certificates
+WORKDIR /root
+RUN mkdir config && mkdir certs && mkdir storage
 COPY --from=0 /go/src/bitbucket.org/cmaiorano/golang-wol/golang-wol .
-VOLUME /config
-VOLUME /certs
+VOLUME /root/config
+VOLUME /root/certs
 EXPOSE 443 5000
-ENTRYPOINT [ "./golang-wol" ]
+ENTRYPOINT ["./golang-wol"]
