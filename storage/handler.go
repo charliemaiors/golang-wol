@@ -53,6 +53,7 @@ func StartHandling(deviceChan chan *types.AliasResponse, getChan chan *types.Get
 func InitLocal(initialPassword string) {
 
 	db = getDB()
+	defer db.Close()
 	log.Debugf("Openend database %v, starting bucket definition", db)
 
 	err := db.Update(func(transaction *storage.Tx) error {
@@ -72,7 +73,7 @@ func InitLocal(initialPassword string) {
 		panic(err)
 	}
 
-	err = insertPassword(initialPassword, false)
+	err = insertPassword(initialPassword)
 
 	if err != nil {
 		panic(err)
@@ -212,7 +213,7 @@ func checkPassword(pass string) error {
 	return err
 }
 
-func insertPassword(pass string, update bool) error {
+func insertPassword(pass string) error {
 	passHash := []byte(pass)
 	effectivePasswd, err := bcrypt.GenerateFromPassword(passHash, bcrypt.DefaultCost)
 
@@ -220,21 +221,28 @@ func insertPassword(pass string, update bool) error {
 		panic(err)
 	}
 
+	log.Debugf("Generated password %v", effectivePasswd)
+
 	err = db.Update(func(transaction *storage.Tx) error {
+		log.Debug("Entering transaction")
 		bucket := transaction.Bucket([]byte(passwordBucket))
-		if bucket.Get([]byte(passworkdKey)) != nil && !update {
+		if bucket.Get([]byte(passworkdKey)) != nil {
 			return errors.New("Password already defined")
 		}
 
+		log.Debug("Adding password")
 		err := bucket.Put([]byte(passworkdKey), effectivePasswd)
-
-		return err
+		if err != nil {
+			return err
+		}
+		return nil
 	})
 
 	return err
 }
 
 func deleteDevice(alias string) error {
+	defer db.Close()
 	err := db.Update(func(transaction *storage.Tx) error {
 		bucket := transaction.Bucket([]byte(devicesBucket))
 		err := bucket.Delete([]byte(alias))
@@ -248,12 +256,15 @@ func updatePassword(oldPassword, newPassword string) error {
 	err := db.Update(func(transaction *storage.Tx) error {
 		bucket := transaction.Bucket([]byte(passwordBucket))
 		effectiveOldPassHash := bucket.Get([]byte(passworkdKey))
-		err := bcrypt.CompareHashAndPassword(effectiveOldPassHash, []byte(effectiveOldPassHash))
+		err := bcrypt.CompareHashAndPassword(effectiveOldPassHash, []byte(oldPassword))
 		if err != nil {
 			log.Errorf("Got error %v", err)
 			return err
 		}
-		err = insertPassword(newPassword, true)
+		log.Debug("Old password is valid, updating password")
+		effectiveNewPasswd, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+		log.Debug("Updating password")
+		err = bucket.Put([]byte(passworkdKey), effectiveNewPasswd)
 		return err
 	})
 	return err

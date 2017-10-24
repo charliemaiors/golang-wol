@@ -30,6 +30,9 @@
                 box-shadow: 0 1px 2px rgba(0,0,0,.05);
             }
         </style>
+        <!-- jQuery!!! -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
@@ -46,34 +49,39 @@
     <body>
         <nav class="navbar navbar-default">
             <div class="container-fluid">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="#">Wol</a>
-            </div>
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Wol</a>
+                </div>
 
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
-                <li><a href="/">Home <span class="sr-only">(current)</span></a></li>
-                <li class="active"><a href="/devices">Devices</a></li>
-                <li><a href="/config">Configuration</a></li>
-                </ul>
-            </div><!-- /.navbar-collapse -->
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
+                    <li><a href="/">Home<span class="sr-only">(current)</span></a></li>
+                    <li class="active dropdown">
+                        <a href="/devices" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Devices<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                        <li><a href="/manage-dev">Add Device</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/config">Configuration</a></li>
+                    </ul>
+                </div><!-- /.navbar-collapse -->
             </div><!-- /.container-fluid -->
         </nav>
         <div class = "container-fluid">
             <div class = "jumbotron">
                 {{ with .}}     
                     <h2>Added device {{ .Name }} successfully!!!</h2>
-                    <h4>Using Mac: {{ .Device.Mac }} with IP: {{ .Device.IP }}</h4>
+                    <p>Using Mac: {{ .Device.Mac }} with IP: {{ .Device.IP }}</p>
                 {{ end }}
-                <h4>Now return to <a href="/">home</a> in order to wake up your device or <a href="/devices">add</a> a new one</h4>
+                <h4>Now return to <a href="/">home</a> in order to wake up your device or <a href="/devices">list</a> all devices</h4>
             </div>
         </div>
     </body>

@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"html/template"
 	"net"
@@ -68,11 +69,14 @@ func configRouter() {
 
 	router.GET("/manage-dev", handleManageDevicesGet)
 	router.POST("/manage-dev", handleManageDevicePost)
+
 	router.GET("/devices", handleDevicesGet)
 	router.GET("/devices/:alias", handleDeviceGet)
 	router.DELETE("/devices/:alias", handleDeviceDelete)
+
 	router.GET("/", handleRootGet)
 	router.POST("/", handleRootPost)
+
 	router.GET("/config", handleConfigGet)
 	router.POST("/config", handleConfigPost)
 }
@@ -108,12 +112,21 @@ func handleManageDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter
 }
 
 func handleConfigGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	tmpbl, err := templateBox.String("config.html")
-	if err != nil {
-		handleError(w, r, err, http.StatusUnprocessableEntity)
+	if initialized {
+		tmpbl, err := templateBox.String("config-update.html")
+		if err != nil {
+			handleError(w, r, err, http.StatusUnprocessableEntity)
+		}
+		templ := template.Must(template.New("conf-upd").Parse(tmpbl))
+		templ.Execute(w, nil)
+	} else {
+		tmpbl, err := templateBox.String("config.html")
+		if err != nil {
+			handleError(w, r, err, http.StatusUnprocessableEntity)
+		}
+		templ := template.Must(template.New("conf").Parse(tmpbl))
+		templ.Execute(w, nil)
 	}
-	templ := template.Must(template.New("conf").Parse(tmpbl))
-	templ.Execute(w, nil)
 }
 
 func handleDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -149,16 +162,27 @@ func handleDeviceGet(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 
 func handleDeviceDelete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	alias := ps.ByName("alias")
+	log.Debugf("Got device delete request for %s", alias)
 	resp := make(chan error)
 	delDev := &types.DelDev{
 		Alias:    alias,
 		Response: resp,
 	}
+	log.Debugf("Sending delete request with %v", delDev)
 	delDevChan <- delDev
 	err, ok := <-resp
 	if ok && err != nil {
+		log.Errorf("Got error %v", err)
 		handleError(w, r, err, http.StatusBadGateway)
+		return
 	}
+	log.Debug("Everything went fine, responding")
+	respJs := struct {
+		Message string `json:"message"`
+	}{Message: alias + " removed"}
+	w.WriteHeader(http.StatusOK)
+	enc := json.NewEncoder(w)
+	enc.Encode(respJs)
 }
 
 func handleDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -174,6 +198,15 @@ func handleConfigPost(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 		handleError(w, r, err, http.StatusUnprocessableEntity)
 		return
 	}
+
+	if initialized {
+		handleConfigUpdate(w, r)
+	} else {
+		handleConfigInit(w, r)
+	}
+}
+
+func handleConfigInit(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	if password == "" {
 		handleError(w, r, errors.New("Empty Password"), http.StatusUnprocessableEntity)
@@ -183,12 +216,44 @@ func handleConfigPost(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
 
 	initialized = true
-	tmpbl, err := templateBox.String("config-success.html")
+	tmpbl, err := templateBox.String("config-success.gohtml")
 	if err != nil {
 		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
 	templ := template.Must(template.New("confSucc").Parse(tmpbl))
-	err = templ.Execute(w, nil)
+	err = templ.Execute(w, false)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func handleConfigUpdate(w http.ResponseWriter, r *http.Request) {
+
+	oldPass := r.FormValue("oldPassword")
+	newPass := r.FormValue("newPassword")
+
+	if newPass == "" || oldPass == "" {
+		log.Errorf("New pass %s OldPass %s", newPass, oldPass)
+		handleError(w, r, errors.New("One of the correspondent passwords are empty"), http.StatusUnprocessableEntity)
+		return
+	}
+	resp := make(chan error)
+	passUpdate := &types.PasswordUpdate{NewPassword: newPass, OldPassword: oldPass, Response: resp}
+	updatePassChan <- passUpdate
+
+	err, ok := <-resp
+	if ok && err != nil {
+		log.Errorf("Got error %v", err)
+		handleError(w, r, err, http.StatusBadGateway)
+		return
+	}
+
+	tmpbl, err := templateBox.String("config-success.gohtml")
+	if err != nil {
+		handleError(w, r, err, http.StatusUnprocessableEntity)
+	}
+	templ := template.Must(template.New("confUpd").Parse(tmpbl))
+	err = templ.Execute(w, true)
 	if err != nil {
 		panic(err)
 	}
