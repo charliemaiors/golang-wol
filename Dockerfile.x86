@@ -1,0 +1,11 @@
+FROM golang:1.9
+COPY . /go/src/bitbucket.org/cmaiorano/golang-wol
+WORKDIR /go/src/bitbucket.org/cmaiorano/golang-wol
+RUN ls -la
+RUN GOOS=linux go build -o golang-wol wolsrv.go
+
+FROM scratch
+COPY --from=0 /go/src/bitbucket.org/cmaiorano/golang-wol/golang-wol .
+VOLUME /config
+VOLUME /certs
+ENTRYPOINT [ "./golang-wol" ]

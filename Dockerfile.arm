@@ -1,0 +1,10 @@
+FROM golang:1.9
+ADD . /go/src/bitbucket.org/cmaiorano/golang-wol
+WORKDIR /go/src/bitbucket.org/cmaiorano/golang-wol
+RUN GOOS=linux GOARCH=arm go build -o golang-wol wol.go
+
+FROM resin/scratch
+COPY --from=0 /go/golang-wol .
+VOLUME /config
+VOLUME /certs
+ENTRYPOINT [ "./golang-wol" ]
