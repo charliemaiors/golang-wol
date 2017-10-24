@@ -1,7 +1,7 @@
 FROM golang:1.9
 COPY . /go/src/bitbucket.org/cmaiorano/golang-wol
 WORKDIR /go/src/bitbucket.org/cmaiorano/golang-wol
-RUN GOOS=linux GOARCH=arm go build -o golang-wol wol.go
+RUN GOOS=linux GOARCH=arm go build -o golang-wol wolsrv.go
 
 FROM resin/scratch
 COPY --from=0 /go/golang-wol .
