@@ -30,6 +30,7 @@ func init() {
 //StartHandling start an infinite loop in order to handle properly the bbolt database used for alias and password storage
 func StartHandling(deviceChan chan *types.AliasResponse, getChan chan *types.GetDev, delDevChan chan *types.DelDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate, getAliases chan chan string) {
 	db = getDB()
+	defer db.Close()
 
 	for {
 		select {
@@ -52,8 +53,6 @@ func StartHandling(deviceChan chan *types.AliasResponse, getChan chan *types.Get
 //InitLocal initialize db in case is first start of web application
 func InitLocal(initialPassword string) {
 
-	db = getDB()
-	defer db.Close()
 	log.Debugf("Openend database %v, starting bucket definition", db)
 
 	err := db.Update(func(transaction *storage.Tx) error {
@@ -242,7 +241,7 @@ func insertPassword(pass string) error {
 }
 
 func deleteDevice(alias string) error {
-	defer db.Close()
+
 	err := db.Update(func(transaction *storage.Tx) error {
 		bucket := transaction.Bucket([]byte(devicesBucket))
 		err := bucket.Delete([]byte(alias))

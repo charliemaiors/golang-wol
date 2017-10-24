@@ -65,15 +65,23 @@
                     $('#configMacAddr').prop('disabled', false);
                     $('#configIP').prop('disabled', false);
                     $('#configAlias').prop('disabled', false);
+                    $(':input[name="deleteBtn"]').prop('disabled',false);
                     $(':input[type="submit"]').prop('disabled', false);
                     event.preventDefault()
                 })
-                
+            })
+        </script>
+        <script>
+            $(document).ready(function(){
                 $('#dltBtn').click(function(event){
                     event.preventDefault()  
-                    
+                    headerVal = window.btoa($('#validationPass').val())
+
                     $.ajax({
                         async: false,
+                        headers: {
+                            'X-Auth-Token': headerVal
+                        },
                         type:"DELETE",
                         url: window.location.href,
                         dataType: "json"
@@ -119,7 +127,7 @@
         </nav>
         <div class="container-fluid">
             {{ with . }}
-                <form class="form-horizontal" action="/devices" method="PUT">
+                <form class="form-horizontal" action="/devices/{{ .Name }}" method="POST">
                     <h2 class="form-horizontal-heading">Modify device {{ .Name }}</h2>
                     <p class="form-horizontal-heading">Please first unlock form, then modify data</p>
                     <div class="form-group row">
@@ -147,14 +155,14 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <div id="modifyBtn" class="col-sm-4">
+                        <div id="modifyBtn" class="col-sm-3">
                             <button class="btn btn-large btn-primary">Modify</button>
                         </div>
-                        <div class="col-sm-offset-3 col-sm-4" >
+                        <div class="col-sm-3" >
                             <button type="submit" class="btn btn-large btn-primary" disabled>Update</button>
                         </div>
-                        <div id="dltBtn" class="col-sm-offset-3 col-sm-4">
-                            <button class="btn btn-large btn-primary">Delete</button>
+                        <div id="dltBtn" class="col-sm-3">
+                            <button name="deleteBtn" class="btn btn-large btn-primary" disabled>Delete</button>
                         </div>
                     </div>
                 </form>               

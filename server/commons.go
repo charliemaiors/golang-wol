@@ -1,6 +1,7 @@
 package server
 
 import (
+	b64 "encoding/base64"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"bitbucket.org/cmaiorano/golang-wol/storage"
@@ -71,6 +73,7 @@ func configRouter() {
 	router.POST("/manage-dev", handleManageDevicePost)
 
 	router.GET("/devices", handleDevicesGet)
+	router.POST("/devices/:alias", handleDevicePost)
 	router.GET("/devices/:alias", handleDeviceGet)
 	router.DELETE("/devices/:alias", handleDeviceDelete)
 
@@ -79,20 +82,6 @@ func configRouter() {
 
 	router.GET("/config", handleConfigGet)
 	router.POST("/config", handleConfigPost)
-}
-
-func handleRootGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	if !initialized {
-		http.Redirect(w, r, "/config", http.StatusTemporaryRedirect)
-		return
-	}
-	tmpbl, err := templateBox.String("index.gohtml")
-	if err != nil {
-		handleError(w, r, err, http.StatusUnprocessableEntity)
-	}
-	templ := template.Must(template.New("index").Parse(tmpbl))
-	aliases := getAllAliases()
-	templ.Execute(w, aliases)
 }
 
 func handleManageDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -111,22 +100,40 @@ func handleManageDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter
 	}
 }
 
-func handleConfigGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	if initialized {
-		tmpbl, err := templateBox.String("config-update.html")
-		if err != nil {
-			handleError(w, r, err, http.StatusUnprocessableEntity)
-		}
-		templ := template.Must(template.New("conf-upd").Parse(tmpbl))
-		templ.Execute(w, nil)
-	} else {
-		tmpbl, err := templateBox.String("config.html")
-		if err != nil {
-			handleError(w, r, err, http.StatusUnprocessableEntity)
-		}
-		templ := template.Must(template.New("conf").Parse(tmpbl))
-		templ.Execute(w, nil)
+func handleManageDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	if !initialized {
+		http.Redirect(w, r, "/config", http.StatusTemporaryRedirect)
+		return
 	}
+
+	err := r.ParseForm()
+	if err != nil {
+		log.Errorf("Error parsing form %v", err)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
+		return
+	}
+
+	err = checkPassword(r.FormValue("password"))
+
+	if err != nil {
+		handleError(w, r, err, http.StatusUnauthorized)
+		return
+	}
+
+	alias, regErr := registerOrUpdateDevice(r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ipAddr"))
+	if regErr != nil {
+		log.Errorf("Error registering %v", regErr)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
+		return
+	}
+
+	tmpbl, err := templateBox.String("add-device-success.gohtml")
+	if err != nil {
+		handleError(w, r, err, http.StatusUnprocessableEntity)
+		return
+	}
+	templ := template.Must(template.New("addDevSucc").Parse(tmpbl))
+	templ.Execute(w, alias)
 }
 
 func handleDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -163,19 +170,28 @@ func handleDeviceGet(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 func handleDeviceDelete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	alias := ps.ByName("alias")
 	log.Debugf("Got device delete request for %s", alias)
-	resp := make(chan error)
-	delDev := &types.DelDev{
-		Alias:    alias,
-		Response: resp,
+	token := r.Header.Get("X-Auth-Token")
+	pass, err := b64.StdEncoding.DecodeString(token)
+	if err != nil {
+		log.Errorf("Got error %v", err)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
+		return
 	}
-	log.Debugf("Sending delete request with %v", delDev)
-	delDevChan <- delDev
-	err, ok := <-resp
-	if ok && err != nil {
+
+	err = checkPassword(string(pass))
+	if err != nil {
+		log.Errorf("Got error %v", err)
+		handleError(w, r, err, http.StatusUnauthorized)
+		return
+	}
+
+	err = delDevice(alias)
+	if err != nil {
 		log.Errorf("Got error %v", err)
 		handleError(w, r, err, http.StatusBadGateway)
 		return
 	}
+
 	log.Debug("Everything went fine, responding")
 	respJs := struct {
 		Message string `json:"message"`
@@ -185,10 +201,63 @@ func handleDeviceDelete(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	enc.Encode(respJs)
 }
 
-func handleDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func handleDevicePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	alias := ps.ByName("alias")
 	err := r.ParseForm()
 	if err != nil {
+		log.Errorf("Something bad happened with form %v", err)
 		handleError(w, r, err, http.StatusUnprocessableEntity)
+		return
+	}
+	formAlias := r.FormValue("alias")
+	err = checkPassword(r.FormValue("password"))
+
+	if err != nil {
+		log.Errorf("Wrong password? %v", err)
+		handleError(w, r, err, http.StatusUnauthorized)
+		return
+	}
+
+	if strings.Compare(alias, formAlias) != 0 {
+		err = delDevice(alias) //Delete post target device in order to create a new one in db
+		if err != nil {
+			log.Errorf("Got error deleting device %v", err)
+			handleError(w, r, err, http.StatusBadRequest)
+			return
+		}
+	}
+	aliasType, err := registerOrUpdateDevice(formAlias, r.FormValue("macAddr"), r.FormValue("ipAddr")) //updating device or creating a new one
+
+	if err != nil {
+		log.Errorf("Wrong password? %v", err)
+		handleError(w, r, err, http.StatusUnprocessableEntity)
+		return
+	}
+
+	tmpbl, err := templateBox.String("updated-device-success.gohtml")
+	if err != nil {
+		handleError(w, r, err, http.StatusUnprocessableEntity)
+		return
+	}
+	templ := template.Must(template.New("addDevSucc").Parse(tmpbl))
+	templ.Execute(w, aliasType)
+}
+
+func handleConfigGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	if initialized {
+		tmpbl, err := templateBox.String("config-update.html")
+		if err != nil {
+			handleError(w, r, err, http.StatusUnprocessableEntity)
+		}
+		templ := template.Must(template.New("conf-upd").Parse(tmpbl))
+		templ.Execute(w, nil)
+	} else {
+		tmpbl, err := templateBox.String("config.html")
+		if err != nil {
+			handleError(w, r, err, http.StatusUnprocessableEntity)
+		}
+		templ := template.Must(template.New("conf").Parse(tmpbl))
+		templ.Execute(w, nil)
 	}
 }
 
@@ -259,6 +328,20 @@ func handleConfigUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func handleRootGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	if !initialized {
+		http.Redirect(w, r, "/config", http.StatusTemporaryRedirect)
+		return
+	}
+	tmpbl, err := templateBox.String("index.gohtml")
+	if err != nil {
+		handleError(w, r, err, http.StatusUnprocessableEntity)
+	}
+	templ := template.Must(template.New("index").Parse(tmpbl))
+	aliases := getAllAliases()
+	templ.Execute(w, aliases)
+}
+
 func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	err := r.ParseForm()
 	if err != nil {
@@ -307,42 +390,6 @@ func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	templ.Execute(w, wakeupRep)
 }
 
-func handleManageDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	if !initialized {
-		http.Redirect(w, r, "/config", http.StatusTemporaryRedirect)
-		return
-	}
-
-	err := r.ParseForm()
-	if err != nil {
-		log.Errorf("Error parsing form %v", err)
-		handleError(w, r, err, http.StatusUnprocessableEntity)
-		return
-	}
-
-	err = checkPassword(r.FormValue("password"))
-
-	if err != nil {
-		handleError(w, r, err, http.StatusUnauthorized)
-		return
-	}
-
-	alias, regErr := registerDevice(r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ipAddr"))
-	if regErr != nil {
-		log.Errorf("Error registering %v", regErr)
-		handleError(w, r, err, http.StatusUnprocessableEntity)
-		return
-	}
-
-	tmpbl, err := templateBox.String("add-device-success.gohtml")
-	if err != nil {
-		handleError(w, r, err, http.StatusUnprocessableEntity)
-		return
-	}
-	templ := template.Must(template.New("addDevSucc").Parse(tmpbl))
-	templ.Execute(w, alias)
-}
-
 func pingHost(ip string) (map[time.Time]bool, error) {
 	pinger.AddIP(ip)
 	defer pinger.RemoveIP(ip)
@@ -378,6 +425,21 @@ func pingHost(ip string) (map[time.Time]bool, error) {
 	return report, nil
 }
 
+func delDevice(alias string) error {
+	resp := make(chan error)
+	delDev := &types.DelDev{
+		Alias:    alias,
+		Response: resp,
+	}
+	log.Debugf("Sending delete request with %v", delDev)
+	delDevChan <- delDev
+	err, ok := <-resp
+	if ok && err != nil {
+		return err
+	}
+	return nil
+}
+
 func checkPassword(password string) error {
 	respChan := make(chan error)
 	pass := &types.PasswordHandling{Password: password, Response: respChan}
@@ -386,7 +448,7 @@ func checkPassword(password string) error {
 	return err
 }
 
-func registerDevice(alias, mac, ip string) (*types.Alias, error) {
+func registerOrUpdateDevice(alias, mac, ip string) (*types.Alias, error) {
 	if !reMAC.MatchString(mac) {
 		return nil, errors.New("Invalid mac address format")
 	}
@@ -405,7 +467,6 @@ func registerDevice(alias, mac, ip string) (*types.Alias, error) {
 }
 
 func getAllAliases() []string {
-	log.Debug("GETTING ALL ALIASES")
 	aliasChan := make(chan string)
 	aliasRequestChan <- aliasChan
 	aliases := make([]string, 0, 0)
