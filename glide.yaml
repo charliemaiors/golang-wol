@@ -1,9 +1,0 @@
-package: bitbucket.org/cmaiorano/golang-wol
-import:
-- package: github.com/coreos/bbolt
-  version: ^1.3.1-coreos.2
-- package: github.com/sabhiram/go-wol
-- package: github.com/sirupsen/logrus
-  version: ^1.0.3
-- package: github.com/spf13/viper
-  version: ^1.0.0
