@@ -18,7 +18,7 @@ pipelines:
           - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
           #- docker build -t cmaiorano/golang-wol:arm -f Dockerfile.arm .
           - docker build -t cmaiorano/golang-wol:x86 -f Dockerfile.x86 .
-          - docker push cmaiorano/golang-wol:arm
+          #- docker push cmaiorano/golang-wol:arm
           - docker push cmaiorano/golang-wol:x86
 
 options:
