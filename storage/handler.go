@@ -52,7 +52,7 @@ func StartHandling(deviceChan chan *types.AliasResponse, getChan chan *types.Get
 
 //InitLocal initialize db in case is first start of web application
 func InitLocal(initialPassword string) {
-
+	db = getDB()
 	log.Debugf("Openend database %v, starting bucket definition", db)
 
 	err := db.Update(func(transaction *storage.Tx) error {
