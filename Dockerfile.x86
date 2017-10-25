@@ -7,9 +7,9 @@ RUN cd server/ rice embed-go && cd .. && CGO_ENABLED=0 GOOS=linux go build -v -o
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 WORKDIR /root
-RUN mkdir config && mkdir certs && mkdir storage
+RUN mkdir config && mkdir certs && mkdir storage && mkdir templates
 COPY --from=0 /go/src/bitbucket.org/cmaiorano/golang-wol/golang-wol exec/golang-wol
-COPY --from=0 /go/src/bitbucket.org/cmaiorano/golang-wol/templates /templates/
+COPY --from=0 /go/src/bitbucket.org/cmaiorano/golang-wol/templates/* /templates/
 VOLUME /root/config
 VOLUME /root/certs
 EXPOSE 443 5000

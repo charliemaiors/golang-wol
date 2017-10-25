@@ -16,10 +16,11 @@ pipelines:
           - go get -v
           - go build -v
           - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-          #- docker build -t cmaiorano/golang-wol:arm -f Dockerfile.arm .
           - docker build -t cmaiorano/golang-wol:x86 -f Dockerfile.x86 .
-          #- docker push cmaiorano/golang-wol:arm
           - docker push cmaiorano/golang-wol:x86
+          - docker run --rm --privileged multiarch/qemu-user-static:register --reset
+          - docker build -t cmaiorano/golang-wol:arm -f Dockerfile.arm .
+          - docker push cmaiorano/golang-wol:arm
 
 options:
   docker: true
