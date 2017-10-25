@@ -39,6 +39,7 @@ func StartLetsEncrypt(alreadyInit bool) {
 		},
 		Handler: router,
 	}
+	loadBox()
 
 	err = server.ListenAndServeTLS("", "")
 

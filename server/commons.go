@@ -50,14 +50,18 @@ func init() {
 		ifaceList = append(ifaceList, v.Name)
 	}
 
-	templateBox, err = rice.FindBox("../templates/")
-	if err != nil {
-		panic(err)
-	}
 	pinger = ping.NewPinger()
 	log.SetLevel(log.DebugLevel)
 	configRouter()
+}
 
+func loadBox() {
+	var err error
+	templateBox, err = rice.FindBox("../templates")
+	if err != nil {
+		panic(err)
+	}
+	log.Debugf("Is embedded? %v", templateBox.IsEmbedded())
 }
 
 func configRouter() {

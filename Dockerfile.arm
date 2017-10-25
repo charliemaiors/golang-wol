@@ -11,4 +11,4 @@ COPY --from=0 /go/src/bitbucket.org/cmaiorano/golang-wol/golang-wol .
 VOLUME /root/config
 VOLUME /root/certs
 EXPOSE 443 5000
-ENTRYPOINT ["./golang-wol"]
+ENTRYPOINT ["/root/golang-wol"]

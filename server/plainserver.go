@@ -12,6 +12,7 @@ func StartNormal(alreadyInit bool) {
 	if initialized {
 		go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
 	}
+	loadBox()
 	err := http.ListenAndServe(":5000", router)
 
 	if err != nil {
