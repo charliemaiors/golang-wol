@@ -65,13 +65,10 @@ func loadBox() {
 }
 
 func configRouter() {
-	mn := &MethodNotAllowed{}
-	nf := &NotFound{}
-
 	router = httprouter.New()
 	router.HandleMethodNotAllowed = true
-	router.MethodNotAllowed = mn
-	router.NotFound = nf
+	router.MethodNotAllowed = handleNotAllowed
+	router.NotFound = handleNotFound
 
 	router.GET("/manage-dev", handleManageDevicesGet)
 	router.POST("/manage-dev", handleManageDevicePost)
@@ -277,6 +274,14 @@ func handleConfigPost(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	} else {
 		handleConfigInit(w, r)
 	}
+}
+
+func handleNotFound(w http.ResponseWriter, r *http.Request) {
+	handleError(w, r, errors.New("Not Found"), http.StatusNotFound)
+}
+
+func handleNotAllowed(w http.ResponseWriter, r *http.Request) {
+	handleError(w, r, errors.New("Method not Allowed"), http.StatusMethodNotAllowed)
 }
 
 func handleConfigInit(w http.ResponseWriter, r *http.Request) {
