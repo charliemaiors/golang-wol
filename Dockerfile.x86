@@ -2,7 +2,7 @@ FROM golang:1.9
 RUN go get -v github.com/GeertJohan/go.rice/rice
 COPY . /go/src/github.com/charliemaiors/golang-wol
 WORKDIR /go/src/github.com/charliemaiors/golang-wol
-RUN cd server/ rice embed-go
+RUN cd server/ && rice embed-go
 RUN CGO_ENABLED=0 GOOS=linux go build -v -o golang-wol wolsrv.go
 
 FROM alpine:latest
