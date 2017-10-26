@@ -1,15 +1,15 @@
 FROM golang:windowsservercore
 RUN go get -v github.com/GeertJohan/go.rice/rice
-COPY . C:\gopath\src\github.com\charliemaiors\golang-wol
-WORKDIR C:\gopath\src\github.com\charliemaiors\golang-wol
-RUN cd .\server && rice embed-go
+COPY . C:/gopath/src/github.com/charliemaiors/golang-wol
+WORKDIR C:/gopath/src/github.com/charliemaiors/golang-wol
+RUN cd ./server; rice embed-go
 ENV CGO_ENABLED=0
 RUN go build -v -o golang-wol.exe wolsrv.go
 
 FROM microsoft/nanoserver
-RUN mkdir config; mkdir certs; mkdir storage
-COPY --from=0 C:\gopath\src\github.com\charliemaiors\golang-wol\golang-wol.exe .
-VOLUME C:\config
-VOLUME C:\certs
+RUN mkdir config && mkdir certs && mkdir storage
+COPY --from=0 C:/gopath/src/github.com/charliemaiors/golang-wol/golang-wol.exe .
+VOLUME C:/config
+VOLUME C:/certs
 EXPOSE 443 5000
-ENTRYPOINT ["powershell .\golang-wol.exe"]
+ENTRYPOINT ["C:/golang-wol.exe"]
