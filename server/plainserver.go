@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"bitbucket.org/cmaiorano/golang-wol/storage"
+	"github.com/charliemaiors/golang-wol/storage"
 )
 
 //StartNormal start the plain http server without any encryption

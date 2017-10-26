@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	"bitbucket.org/cmaiorano/golang-wol/storage"
+	"github.com/charliemaiors/golang-wol/storage"
 
 	"github.com/spf13/viper"
 

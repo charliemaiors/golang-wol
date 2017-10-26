@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	"bitbucket.org/cmaiorano/golang-wol/server"
+	"github.com/charliemaiors/golang-wol/server"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

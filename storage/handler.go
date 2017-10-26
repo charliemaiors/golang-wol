@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"bitbucket.org/cmaiorano/golang-wol/types"
+	"github.com/charliemaiors/golang-wol/types"
 	storage "github.com/coreos/bbolt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

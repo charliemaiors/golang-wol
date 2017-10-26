@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"bitbucket.org/cmaiorano/golang-wol/storage"
-	"bitbucket.org/cmaiorano/golang-wol/types"
 	rice "github.com/GeertJohan/go.rice"
+	"github.com/charliemaiors/golang-wol/storage"
+	"github.com/charliemaiors/golang-wol/types"
 	"github.com/julienschmidt/httprouter"
 	wol "github.com/sabhiram/go-wol"
 	log "github.com/sirupsen/logrus"
