@@ -18,7 +18,7 @@ Copy the executable in your home folder, create a folder called ```storage``` an
 The service will use port 5000 and is available on http plain.
 
 ### Advanced installation
-
+---
  You could also run Golang Wol as a system service using systemd template in script configuration and/or define a custom configuration file, this file could be located in a folder called ```config``` at the same directory level of the executable or in ```/etc/wol/```.
  The Configuration file could have these sections:
 
@@ -47,5 +47,5 @@ server:
  Define the custom location of the database, the executable has to have the capabilities of read,write or create file inside that folder.
 
  ### Docker
-
- This service is also available as container for arm, normal x86 and windows container on the [docker hub](https://hub.docker.com/r/cmaiorano/golang-wol/) using respectively arm, x86 or win as image tag
+---
+ This service is also available as container for arm, normal x86 and windows container on the [docker hub](https://hub.docker.com/r/cmaiorano/golang-wol/) using respectively arm, x86 or win as image tag.
