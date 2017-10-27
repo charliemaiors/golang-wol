@@ -23,7 +23,10 @@ import (
 	ping "github.com/tatsushid/go-fastping"
 )
 
-const delims = ":-"
+const (
+	delims    = ":-"
+	bCastAddr = "255.255.255.255:9"
+)
 
 var (
 	initialized      = false
@@ -522,7 +525,7 @@ func getDevice(alias string) (*types.Device, error) {
 }
 
 func sendPacket(mac string) error {
-	err := wol.SendMagicPacket(mac, "255.255.255.255", "")
+	err := wol.SendMagicPacket(mac, bCastAddr, "")
 	return err
 }
 
