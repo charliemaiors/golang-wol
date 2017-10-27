@@ -12,8 +12,8 @@ import (
 )
 
 //StartLetsEncrypt spawn a https web server powered by letsencrypt certificates
-func StartLetsEncrypt(alreadyInit bool) {
-
+func StartLetsEncrypt(alreadyInit, reverseProxy bool) {
+	initialized = alreadyInit
 	host := viper.GetString("server.letsencrypt.host")
 	certDir := viper.GetString("server.letsencrypt.cert")
 
@@ -26,6 +26,10 @@ func StartLetsEncrypt(alreadyInit bool) {
 		go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
 	}
 
+	if reverseProxy {
+		handleProxy()
+	}
+
 	certManager := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(host), //your domain here
@@ -33,7 +37,7 @@ func StartLetsEncrypt(alreadyInit bool) {
 	}
 
 	server := &http.Server{
-		Addr: ":443", //Different port from 443 could be hard for challenges
+		Addr: ":443", //Different port from 443 could be hard for acme-tlsni-challenge
 		TLSConfig: &tls.Config{
 			GetCertificate: certManager.GetCertificate,
 		},

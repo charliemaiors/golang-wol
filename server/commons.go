@@ -16,6 +16,7 @@ import (
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/charliemaiors/golang-wol/storage"
 	"github.com/charliemaiors/golang-wol/types"
+	"github.com/gorilla/handlers"
 	"github.com/julienschmidt/httprouter"
 	wol "github.com/sabhiram/go-wol"
 	log "github.com/sirupsen/logrus"
@@ -62,6 +63,10 @@ func loadBox() {
 		panic(err)
 	}
 	log.Debugf("Is embedded? %v", templateBox.IsEmbedded())
+}
+
+func handleProxy() {
+	router = handlers.ProxyHeaders(router).(*httprouter.Router) //ugly type assertion, but needed. *httprouter.Router implements http.Handler, vendoring will lock it (hopefully)
 }
 
 func configRouter() {

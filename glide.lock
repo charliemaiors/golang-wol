@@ -1,5 +1,5 @@
 hash: 9f29a7bc5ae0f83fc77c8e6e35525b89d55ebab75571589766b479b174a8ad06
-updated: 2017-10-26T12:36:20.9100974+02:00
+updated: 2017-10-27T16:31:56.5091252+02:00
 imports:
 - name: github.com/coreos/bbolt
   version: 54f6fad6e4859cf6c17d98577f5aab4903c3fdde
@@ -11,6 +11,8 @@ imports:
   version: c02ca9a983da5807ddf7d796784928f5be4afd09
   subpackages:
   - embedded
+- name: github.com/gorilla/handlers
+  version: a4d79d4487c2430a17d9dc8a1f74d1a6ed6908ca
 - name: github.com/hashicorp/hcl
   version: 23c074d0eceb2b8a5bfdbb271ab780cde70f05a8
   subpackages:
@@ -59,7 +61,7 @@ imports:
   - blowfish
   - ssh/terminal
 - name: golang.org/x/net
-  version: 4b14673ba32bee7f5ac0f990a48f033919fd418b
+  version: c73622c77280266305273cb545f54516ced95b93
   subpackages:
   - bpf
   - icmp
@@ -68,7 +70,7 @@ imports:
   - ipv4
   - ipv6
 - name: golang.org/x/sys
-  version: 3e3646d2c706c21b222a5dbcaa6db12b3e0cc765
+  version: b98136db334ff9cb24f28a68e3be3cb6608f7630
   subpackages:
   - unix
   - windows

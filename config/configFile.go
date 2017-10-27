@@ -23,16 +23,17 @@ func init() {
 //Start is used to start the service with provided configuration
 func Start() {
 	initialized := checkAlreadyRun()
+	proxy := checkProxy()
 	log.Debugf("used %s config file", viper.ConfigFileUsed())
 	if viper.IsSet("server.letsencrypt") {
 		log.Debug("Serving letsencrypt")
-		server.StartLetsEncrypt(initialized)
+		server.StartLetsEncrypt(initialized, proxy)
 	} else if viper.IsSet("server.tls") {
 		log.Debug("Serving TLS!")
-		server.StartTLS(initialized)
+		server.StartTLS(initialized, proxy)
 	} else {
 		log.Debug("Serving Plain!")
-		server.StartNormal(initialized)
+		server.StartNormal(initialized, proxy)
 	}
 }
 
@@ -52,6 +53,13 @@ func checkAlreadyRun() bool {
 		return false
 	}
 	return true
+}
+
+func checkProxy() bool {
+	if viper.IsSet("server.proxy") {
+		return viper.GetBool("server.proxy")
+	}
+	return false
 }
 
 func checkIfFolderExist(loc string) error {
