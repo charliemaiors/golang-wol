@@ -14,13 +14,13 @@ import (
 	"time"
 
 	rice "github.com/GeertJohan/go.rice"
+	ping "github.com/charliemaiors/go-fastping"
 	"github.com/charliemaiors/golang-wol/storage"
 	"github.com/charliemaiors/golang-wol/types"
 	"github.com/gorilla/handlers"
 	"github.com/julienschmidt/httprouter"
 	wol "github.com/sabhiram/go-wol"
 	log "github.com/sirupsen/logrus"
-	ping "github.com/tatsushid/go-fastping"
 )
 
 const (
