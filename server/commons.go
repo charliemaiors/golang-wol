@@ -522,7 +522,7 @@ func getDevice(alias string) (*types.Device, error) {
 }
 
 func sendPacket(mac string) error {
-	err := wol.SendMagicPacket(mac, "", "")
+	err := wol.SendMagicPacket(mac, "255.255.255.255", "")
 	return err
 }
 
