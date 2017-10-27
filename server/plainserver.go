@@ -17,7 +17,7 @@ func StartNormal(alreadyInit, reverseProxy bool) {
 	if reverseProxy {
 		handleProxy()
 	}
-	err := http.ListenAndServe(":5000", router)
+	err := http.ListenAndServe(":5000", handler)
 
 	if err != nil {
 		panic(err)

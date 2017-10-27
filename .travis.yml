@@ -2,6 +2,11 @@ sudo: required
 language: go
 os:
   - linux
+
+branches:
+  only:
+    - master
+
 go:
   - 1.9
 

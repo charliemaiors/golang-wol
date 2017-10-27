@@ -38,7 +38,7 @@ var (
 	ifaceList        = make([]string, 0, 0)
 	pinger           *ping.Pinger
 	templateBox      *rice.Box
-	router           *httprouter.Router
+	handler          http.Handler
 )
 
 func init() {
@@ -66,11 +66,11 @@ func loadBox() {
 }
 
 func handleProxy() {
-	router = handlers.ProxyHeaders(router).(*httprouter.Router) //ugly type assertion, but needed. *httprouter.Router implements http.Handler, vendoring will lock it (hopefully)
+	handler = handlers.ProxyHeaders(handler) //ugly type assertion, but needed. *httprouter.Router implements http.Handler, vendoring will lock it (hopefully)
 }
 
 func configRouter() {
-	router = httprouter.New()
+	router := httprouter.New()
 	router.HandleMethodNotAllowed = true
 	router.MethodNotAllowed = handleNotAllowed
 	router.NotFound = handleNotFound
@@ -88,6 +88,8 @@ func configRouter() {
 
 	router.GET("/config", handleConfigGet)
 	router.POST("/config", handleConfigPost)
+
+	handler = router
 }
 
 func handleManageDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
