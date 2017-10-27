@@ -21,7 +21,7 @@ func StartTLS(alreadyInit, reverseProxy bool) {
 		handleProxy()
 	}
 
-	err := http.ListenAndServeTLS(":5000", viper.GetString("server.tls.cert"), viper.GetString("server.tls.key"), router)
+	err := http.ListenAndServeTLS(":5000", viper.GetString("server.tls.cert"), viper.GetString("server.tls.key"), handler)
 	if err != nil {
 		panic(err)
 	}

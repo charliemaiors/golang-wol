@@ -41,7 +41,7 @@ func StartLetsEncrypt(alreadyInit, reverseProxy bool) {
 		TLSConfig: &tls.Config{
 			GetCertificate: certManager.GetCertificate,
 		},
-		Handler: router,
+		Handler: handler,
 	}
 	loadBox()
 
