@@ -17,7 +17,7 @@ Copy the executable in your home folder, create a folder called ```storage``` an
 ```
 The service will use port 5000 and is available on http plain.
 
-### Advanced installation
+## Advanced installation
 ---
  You could also run Golang Wol as a system service using systemd template in script configuration and/or define a custom configuration file, this file could be located in a folder called ```config``` at the same directory level of the executable or in ```/etc/wol/```.
  The Configuration file could have these sections:
@@ -46,6 +46,42 @@ server:
  ```
  Define the custom location of the database, the executable has to have the capabilities of read,write or create file inside that folder.
 
- ### Docker
+## Reverse Proxy
+---
+
+This service could be installed also behind a reverse proxy defining in the configuration file this section
+
+```yaml
+server:
+    proxy: true
+```
+
+And configure your apache reverse proxy in this way (nginx configuration will be defined as soon as I've spare time)
+
+```
+<IfModule mod_ssl.c>
+        <VirtualHost *:443>
+                # TLS/SSL configuration, this is for the use of crypto.
+                ServerAdmin webmaster@localhost
+                ServerName <your-server-name>
+                SSLEngine On
+                SSLCertificateFile /etc/openssl/cert.pem
+                SSLCertificateKeyFile /etc/openssl/key.pem
+
+                ProxyPass /prefix http://localhost:5000
+                ProxyHTMLURLMap http://localhost:5000 /prefix
+                <Location /wol/>
+                        ProxyPassReverse  http://localhost:5000
+                        SetOutputFilter proxy-html
+                        ProxyHTMLURLMap /          /prefix/
+                        ProxyHTMLURLMap /prefix      /prefix #avoid infinite loop
+                </Location>
+        </VirtualHost>
+</IfModule>
+```
+
+Apache required modules are: ```mod_proxy```,  ```mod_proxy_html ``` and ```mod_ssl``` if the reverse proxy uses ssl.
+
+ ## Docker
 ---
  This service is also available as container for arm, normal x86 and windows container on the [docker hub](https://hub.docker.com/r/cmaiorano/golang-wol/) using respectively arm, x86 or win as image tag.
