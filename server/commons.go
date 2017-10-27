@@ -426,7 +426,7 @@ func pingHost(ip string) (map[time.Time]bool, error) {
 	}
 
 	pinger.RunLoop()
-	ticker := time.NewTicker(time.Millisecond * 30)
+	ticker := time.NewTicker(time.Second * 75)
 	select {
 	case <-pinger.Done():
 		if err := pinger.Err(); err != nil {
