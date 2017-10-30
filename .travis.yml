@@ -42,9 +42,8 @@ before_deploy:
   - zip -r bin/golang-wol-arm.zip bin/arm/
 
 deploy:
- provider: releases
-  api_key:
-    secure: $GITHUB_KEY
+  provider: releases
+  api_key: $GITHUB_TOKEN
   file_glob: true
   file: bin/*.zip
   skip_cleanup: true
