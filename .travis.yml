@@ -1,54 +1,49 @@
 sudo: required
 language: go
 os:
-  - linux
-
+- linux
 branches:
   only:
-    - master
-    - /^v\d+(\.\d+)+$/
-
+  - master
+  - "/^v\\d+(\\.\\d+)+$/"
 go:
-  - 1.9
-
+- 1.9
 before_install:
-  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  - sudo apt-get update
-  - sudo apt-get -y install docker-ce zip
-
+- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+- sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu
+  $(lsb_release -cs) stable"
+- sudo apt-get update
+- sudo apt-get -y install docker-ce zip
 before_script:
-  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-  - mkdir -p bin/x86 bin/osx bin/win bin/arm
-
+- docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+- mkdir -p bin/x86 bin/osx bin/win bin/arm
 script:
-  - go get -v ./...
-  - GOOS="linux" go build -v -o bin/x86/golang-wol wolsrv.go
-  - GOOS="darwin" go build -v -o bin/osx/golang-wol wolsrv.go
-  - GOOS="windows" go build -v -o bin/win/golang-wol.exe wolsrv.go
-  - GOOS="linux" GOARCH=arm go build -v -o bin/arm/golang-wol wolsrv.go
-  - docker build -t cmaiorano/golang-wol:x86 -f Dockerfile.x86 .
-  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
-  - docker build -t cmaiorano/golang-wol:arm -f Dockerfile.arm .
-
+- go get -v ./...
+- GOOS="linux" go build -v -o bin/x86/golang-wol wolsrv.go
+- GOOS="darwin" go build -v -o bin/osx/golang-wol wolsrv.go
+- GOOS="windows" go build -v -o bin/win/golang-wol.exe wolsrv.go
+- GOOS="linux" GOARCH=arm go build -v -o bin/arm/golang-wol wolsrv.go
+- docker build -t cmaiorano/golang-wol:x86 -f Dockerfile.x86 .
+- docker run --rm --privileged multiarch/qemu-user-static:register --reset
+- docker build -t cmaiorano/golang-wol:arm -f Dockerfile.arm .
 after_success:
-  - docker push cmaiorano/golang-wol:x86
-  - docker push cmaiorano/golang-wol:arm
-
+- docker push cmaiorano/golang-wol:x86
+- docker push cmaiorano/golang-wol:arm
 before_deploy:
-  - zip -r bin/golang-wol-x86.zip bin/x86/
-  - zip -r bin/golang-wol-osx.zip bin/osx/
-  - zip -r bin/golang-wol-win.zip bin/win/
-  - zip -r bin/golang-wol-arm.zip bin/arm/
-
+- zip -r bin/golang-wol-x86.zip bin/x86/
+- zip -r bin/golang-wol-osx.zip bin/osx/
+- zip -r bin/golang-wol-win.zip bin/win/
+- zip -r bin/golang-wol-arm.zip bin/arm/
 deploy:
   provider: releases
-  api_key: $GITHUB_TOKEN
+  api_key: "$GITHUB_TOKEN"
   file_glob: true
   file: bin/*.zip
   skip_cleanup: true
   on:
     tags: true
-
 services:
-  - docker
+- docker
+env:
+  global:
+    secure: ZNAjM4XPa7syLrev/6ak1RJ2ICc7P1xFzaHSujpNDXlprFWOzUiczY6906u5uS1tmGWgR1qi3PoQ4IMGILj5AFh9xDG4RnT64gJTECgZBmBRAYIeUbaHy7gSeDk9Ixhx9vVa1UfCz8EG5RoZC0U1EBihO2wRaZnDdQUo6Lh0bB6XIydha7fe54VRvP3YuGgJeSQEM2+OB+Jp67/DCwzoczTrJ8xm7nfdnAUk70AtYNvJkNZMR4Z8zHy2+fUpI8/cZBmwl62QxMVsJuGweyRMgGCeXxzZZTiflDgmFjT5aoOAD8aT6X7oJY2fEtSo80MaA5+uicucX/V6tVN9OdYR84wB80oKBROhwFjMxFvwE+rLeJhpQQITMoze/azwJkZZ0P05KYPit1fyV1OLex1aUwDIPjjebrI/g3cUY+ikpPa4XwONqY7gx43TZlqujG+15fjqUjV3buipkhU+zmyWSI9XNQT+vo1QdwoSRbmqwJePoaNeepEmTA9xDDdxIY7p/xljKHpHBB1eiPxUVH9w+VfrprARjhantnI3nqGUHY55F9lkmGlryrZVpsU3lJOHEsKgwT0N+50iQm4BC9yPbFiZaH20mlYzBfUq2wjYVwnn57jpTJ3T6B+1jecAMJfXhIVUIG3Sw7Yr9gIHrY7hOZbJgVghghMsh5bPbu7FWFQ=
