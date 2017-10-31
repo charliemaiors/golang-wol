@@ -24,8 +24,7 @@ import (
 )
 
 const (
-	delims    = ":-"
-	bCastAddr = "255.255.255.255:9"
+	delims = ":-"
 )
 
 var (
@@ -38,22 +37,12 @@ var (
 
 	aliasRequestChan = make(chan chan string)
 	reMAC            = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
-	ifaceList        = make([]string, 0, 0)
 	pinger           *ping.Pinger
 	templateBox      *rice.Box
 	handler          http.Handler
 )
 
 func init() {
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		panic(err)
-	}
-
-	for _, v := range ifaces {
-		ifaceList = append(ifaceList, v.Name)
-	}
-
 	pinger = ping.NewPinger()
 	log.SetLevel(log.DebugLevel)
 	configRouter()
@@ -105,7 +94,7 @@ func handleManageDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter
 		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
 	templ := template.Must(template.New("addDev").Parse(tmpbl))
-	err = templ.Execute(w, ifaceList)
+	err = templ.Execute(w, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -386,7 +375,7 @@ func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	}
 
 	log.Debugf("Found device %v, sending packets", dev)
-	err = sendPacket(dev.Mac)
+	err = sendPacket(dev.Mac, dev.IP)
 	if err != nil {
 		log.Errorf("Got error sending packets %v", err)
 		handleError(w, r, err, http.StatusInternalServerError)
@@ -524,9 +513,17 @@ func getDevice(alias string) (*types.Device, error) {
 	return device, nil
 }
 
-func sendPacket(mac string) error {
-	err := wol.SendMagicPacket(mac, bCastAddr, "")
-	return err
+func sendPacket(mac, ip string) error {
+	bCastIp, err := getBcastAddr(ip)
+	if err != nil {
+		return err
+	}
+	bCastAddr := bCastIp + ":9" //9 is the default port for wake on lan
+	err = wol.SendMagicPacket(mac, bCastAddr, "")
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func handleError(w http.ResponseWriter, r *http.Request, err error, errCode int) {
@@ -545,7 +542,7 @@ func handleError(w http.ResponseWriter, r *http.Request, err error, errCode int)
 func getBcastAddr(ipAddr string) (string, error) { // works when the n is a prefix, otherwise...
 
 	ipParsed := net.ParseIP(ipAddr)
-	mask := ipParsed.DefaultMask()
+	mask := ipParsed.DefaultMask() //weak assumption, but server MUST be able to reach target address otherwise ping will fail
 	log.Debugf("Passed ip: %s, ipParsed: %v, mask: %v", ipAddr, ipParsed, mask)
 
 	n := &net.IPNet{IP: ipParsed, Mask: mask}
