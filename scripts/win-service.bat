@@ -1,0 +1,1 @@
+sc.exe create golangwol binPath= "$env:GOPATH\bin\golang-wol.exe" start= auto DisplayName= "Golang Wake On Lan Service"
