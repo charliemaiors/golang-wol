@@ -43,6 +43,22 @@
                 padding: 7px 9px;
             }
       </style>
+      <script>
+       $(document).ready(function(){
+         $('#dvcslt').change(function(){
+            $.ajax({
+                async: false,
+                type:"POST",
+                url: window.location.href + "/ping/" + $("option:selected")
+                dataType: "json"
+            }).done(function(data){
+                $("label[for='wake']").html(data["message"])
+            }).fail(function(){
+                console.log('Got fail!!!!')
+            })
+         })
+       }
+      </script>
       <!-- Latest compiled and minified CSS -->
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
@@ -88,11 +104,11 @@
       <div class="container-fluid">
         <form class="form-horizontal" action="/" method="POST"> 
           <h2 class="form-horizontal-heading">Select Target Device</h2>
-          <p class="form-horizontal-heading">Select wake on lan target</p>
+          <p class="form-horizontal-heading">Select target</p>
           <div class="form-group row">
             <label class="col-sm-3 control-label">Select Device:</label>
             <div class="col-sm-8">
-              <select  class="form-control" name="devices">
+              <select id="dvcslt" class="form-control" name="devices">
                 {{ range $ }}
                   <option value="{{ . }}">{{ . }}</option>
                 {{ end }}
@@ -105,7 +121,11 @@
               <input type="password" class="form-control" name="password" id="wakeupPassword" placeholder="Password">
             </div>
           </div>
-           <div class="form-group">
+          <div class="for-group row">
+            <label class="col-sm-7">Device is currently</label>
+            <label for="wake" class="col-sm-3 control-label"></label>
+          </div>
+          <div class="form-group">
                 <div class="col-sm-offset-4 col-sm-10">
                     <button type="submit" class="btn btn-large btn-primary">Wake Up!</button>
                 </div>
