@@ -46,6 +46,10 @@ server:
  ```
  Define the custom location of the database, the executable has to have the capabilities of read,write or create file inside that folder.
 
+## Service
+---
+This service could be defined as Linux systemd service or windows service using files under script directory.
+
 ## Reverse Proxy
 ---
 
