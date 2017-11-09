@@ -78,6 +78,8 @@ func configRouter() {
 	router.GET("/", handleRootGet)
 	router.POST("/", handleRootPost)
 
+	router.POST("/ping/:alias", handlePing)
+
 	router.GET("/config", handleConfigGet)
 	router.POST("/config", handleConfigPost)
 
@@ -241,6 +243,38 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 	}
 	templ := template.Must(template.New("addDevSucc").Parse(tmpbl))
 	templ.Execute(w, aliasType)
+}
+
+func handlePing(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	alias := ps.ByName("alias")
+	log.Debugf("Current alias is %s", alias)
+
+	dev, err := getDevice(alias)
+
+	if err != nil {
+		handleError(w, r, err, http.StatusNotFound)
+		return
+	}
+
+	alive := checkHealt(dev.IP)
+
+	resp := struct {
+		Message string `json:"message"`
+	}{}
+
+	if alive {
+		resp.Message = "alive"
+	} else {
+		resp.Message = "asleep"
+	}
+
+	enc := json.NewEncoder(w)
+	err = enc.Encode(&resp)
+
+	if err != nil {
+		handleError(w, r, err, http.StatusUnprocessableEntity)
+		return
+	}
 }
 
 func handleConfigGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -454,6 +488,21 @@ func checkPassword(password string) error {
 	passHandlingChan <- pass
 	err := <-respChan
 	return err
+}
+
+func checkHealt(ip string) bool {
+	pinger.AddIP(ip)
+	defer pinger.RemoveIP(ip)
+	alive := false
+	pinger.OnRecv = func(ip *net.IPAddr, tdur time.Duration) {
+		log.Debugf("Device with ip %s is alive", ip)
+		alive = true
+	}
+	pinger.OnIdle = func() {
+		log.Debug("Terminated ping")
+	}
+	pinger.Run()
+	return alive
 }
 
 func registerOrUpdateDevice(alias, mac, ip string) (*types.Alias, error) {
