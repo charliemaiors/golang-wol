@@ -9,25 +9,37 @@ import (
 	"time"
 
 	"github.com/charliemaiors/golang-wol/types"
-	"github.com/spf13/viper"
 	wol "github.com/sabhiram/go-wol"
 	log "github.com/sirupsen/logrus"
 )
 
-func pingHost(ip string) (map[time.Time]bool, error) {
+func pingHost(ip string, alive bool) (map[time.Time]bool, error) {
 	pinger.AddIP(ip)
 	defer pinger.RemoveIP(ip)
 	stopped := false
 	report := make(map[time.Time]bool)
-	pinger.OnIdle = func() {
-		report[time.Now()] = false
-	}
+	if alive {
+		pinger.OnIdle = func() {
+			report[time.Now()] = true
+			log.Debugf("No answer, the device is aslepp")
+			stopped = true
+			pinger.Stop()
+		}
 
-	pinger.OnRecv = func(ip *net.IPAddr, tdur time.Duration) {
-		report[time.Now()] = true
-		log.Debugf("Got answer from %v", ip.String())
-		stopped = true
-		pinger.Stop()
+		pinger.OnRecv = func(ip *net.IPAddr, tdur time.Duration) {
+			report[time.Now()] = false
+		}
+	} else {
+		pinger.OnIdle = func() {
+			report[time.Now()] = false
+		}
+
+		pinger.OnRecv = func(ip *net.IPAddr, tdur time.Duration) {
+			report[time.Now()] = true
+			log.Debugf("Got answer from %v", ip.String())
+			stopped = true
+			pinger.Stop()
+		}
 	}
 
 	pinger.RunLoop()
@@ -38,7 +50,7 @@ func pingHost(ip string) (map[time.Time]bool, error) {
 			log.Errorf("Ping failed: %v", err)
 			return nil, err
 		}
-		log.Debugf("Got stop for ping alive!!!")
+		log.Debugf("Got stop for ping!!!")
 	case <-ticker.C:
 		break
 	}
@@ -47,7 +59,7 @@ func pingHost(ip string) (map[time.Time]bool, error) {
 		pinger.Stop()
 	}
 	return report, nil
-}
+} //TODO refactor
 
 func delDevice(alias string) error {
 	resp := make(chan error)
@@ -174,8 +186,15 @@ func sendPacket(mac, ip string) error {
 	return nil
 }
 
-func turnOffDev(ip string) error{
-	http.Post("http://"+ip+ )
+func turnOffDev(ip string) error {
+	resp, err := http.Post("http://"+ip+":7740/"+solcommand, "application/json", nil)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		return errors.New(resp.Status)
+	}
+	return nil
 }
 
 func getBcastAddr(ipAddr string) (string, error) { // works when the n is a prefix, otherwise...
