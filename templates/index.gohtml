@@ -53,6 +53,7 @@
                 dataType: "json"
             }).done(function(data){
                 $("label[for='wake']").html(data["message"])
+                $("")
             }).fail(function(){
                 console.log('Got fail!!!!')
             })
@@ -127,7 +128,7 @@
           </div>
           <div class="form-group">
                 <div class="col-sm-offset-4 col-sm-10">
-                    <button type="submit" class="btn btn-large btn-primary">Wake Up!</button>
+                    <button id="sbmbtn" type="submit" class="btn btn-large btn-primary">Wake Up!</button>
                 </div>
             </div>
         </form>

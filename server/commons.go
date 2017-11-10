@@ -497,11 +497,28 @@ func checkHealt(ip string) bool {
 	pinger.OnRecv = func(ip *net.IPAddr, tdur time.Duration) {
 		log.Debugf("Device with ip %s is alive", ip)
 		alive = true
+		pinger.Stop()
 	}
 	pinger.OnIdle = func() {
 		log.Debug("Terminated ping")
 	}
-	pinger.Run()
+
+	pinger.RunLoop()
+	ticker := time.NewTicker(time.Second * 10)
+	select {
+	case <-pinger.Done():
+		if err := pinger.Err(); err != nil {
+			log.Errorf("Ping failed: %v", err)
+			return false
+		}
+		log.Debugf("Got stop for ping alive!!!")
+	case <-ticker.C:
+		break
+	}
+	ticker.Stop()
+	if !alive {
+		pinger.Stop()
+	}
 	return alive
 }
 
