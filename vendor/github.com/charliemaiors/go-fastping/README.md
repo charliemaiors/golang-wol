@@ -7,11 +7,11 @@ is available at http://search.cpan.org/~mlehmann/AnyEvent-FastPing-2.01/
 
 All original functions haven't been implemented yet.
 
-[![GoDoc](https://godoc.org/github.com/tatsushid/go-fastping?status.svg)](https://godoc.org/github.com/tatsushid/go-fastping)
+[![GoDoc](https://godoc.org/github.com/charliemaiors/go-fastping?status.svg)](https://godoc.org/github.com/charliemaiors/go-fastping)
 
 ## Installation
 
-Install and update with `go get -u github.com/tatsushid/go-fastping`
+Install and update with `go get -u github.com/charliemaiors/go-fastping`
 
 ## Examples
 
@@ -50,5 +50,5 @@ uses this package in raw socket mode, it needs to be run as a root user.
 ## License
 go-fastping is under MIT License. See the [LICENSE][license] file for details.
 
-[godoc]: http://godoc.org/github.com/tatsushid/go-fastping
-[license]: https://github.com/tatsushid/go-fastping/blob/master/LICENSE
+[godoc]: http://godoc.org/github.com/charliemaiors/go-fastping
+[license]: https://github.com/charliemaiors/go-fastping/blob/master/LICENSE

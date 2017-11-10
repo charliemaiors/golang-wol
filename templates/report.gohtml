@@ -77,17 +77,33 @@
             </tr>
             </thead>
             <tbody>
-              {{ range $time, $result := .Report }}
-                {{ if $result }}
-                  <tr class="success">
-                    <td>{{ $time }}</td>
-                    <td>The device is alive</td>
-                  </tr>
-                {{ else  }}
-                  <tr class="danger">
-                    <td>{{ $time }}</td>
-                    <td>The device is still sleeping</td>
-                  </tr>
+              {{ if .Alive }}
+                {{ range $time, $result := .Report }}
+                  {{ if $result }}
+                    <tr class="success">
+                      <td>{{ $time }}</td>
+                      <td>The device is sleeping</td>
+                    </tr>
+                  {{ else  }}
+                    <tr class="danger">
+                      <td>{{ $time }}</td>
+                      <td>The device is still alive</td>
+                    </tr>
+                  {{ end }}
+                {{ end }}
+              {{ else }}
+                {{ range $time, $result := .Report }}
+                  {{ if $result }}
+                    <tr class="success">
+                      <td>{{ $time }}</td>
+                      <td>The device is alive</td>
+                    </tr>
+                  {{ else  }}
+                    <tr class="danger">
+                      <td>{{ $time }}</td>
+                      <td>The device is still sleeping</td>
+                    </tr>
+                  {{ end }}
                 {{ end }}
               {{ end }}
             </tbody>

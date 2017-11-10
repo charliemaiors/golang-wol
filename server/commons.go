@@ -402,28 +402,48 @@ func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 		return
 	}
 
-	log.Debugf("Found device %v, sending packets", dev)
-	err = sendPacket(dev.Mac, dev.IP)
+	alive := devStatus[r.FormValue("devices")]
+
+	err = handleDeviceAction(alive, dev)
 	if err != nil {
-		log.Errorf("Got error sending packets %v", err)
-		handleError(w, r, err, http.StatusInternalServerError)
+		log.Errorf("Got error handling device %v", err)
+		handleError(w, r, err, http.StatusBadRequest)
 		return
 	}
 
 	log.Debugf("Packet sent, now waiting for wake up")
-	report, pingErr := pingHost(dev.IP)
+	report, pingErr := pingHost(dev.IP, alive)
 	if pingErr != nil {
 		log.Errorf("Got error %v pinging, the executables has right capacity? if no use setcap cap_net_raw=+ep golang-wol", pingErr)
 		handleError(w, r, pingErr, http.StatusInternalServerError)
 		return
 	}
-	wakeupRep := &types.WakeUpReport{Alias: r.FormValue("devices"), Report: report}
+	wakeupRep := &types.Report{Alias: r.FormValue("devices"), Alive: alive, Report: report}
 	tmpbl, err := templateBox.String("report.gohtml")
 	if err != nil {
 		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
 	templ := template.Must(template.New("rep").Parse(tmpbl))
 	templ.Execute(w, wakeupRep)
+}
+
+func handleDeviceAction(alive bool, dev *types.Device) error {
+	if alive {
+		log.Debugf("Device %v, sending command", dev)
+		err := turnOffDev(dev.IP)
+		if err != nil {
+			log.Errorf("Got error sending command %v", err)
+			return err
+		}
+	} else {
+		log.Debugf("Device %v, sending packets", dev)
+		err := sendPacket(dev.Mac, dev.IP)
+		if err != nil {
+			log.Errorf("Got error sending packets %v", err)
+			return err
+		}
+	}
+	return nil
 }
 
 func handleError(w http.ResponseWriter, r *http.Request, err error, errCode int) {

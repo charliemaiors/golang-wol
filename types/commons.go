@@ -50,7 +50,8 @@ type ResponseError struct {
 }
 
 //WakeUpReport represent a report after wake up attempt
-type WakeUpReport struct {
+type Report struct {
 	Alias  string
+	Alive bool
 	Report map[time.Time]bool
 }
