@@ -24,16 +24,17 @@ func init() {
 func Start() {
 	initialized := checkAlreadyRun()
 	proxy := checkProxy()
+	command := getTurnOffCommand()
 	log.Debugf("used %s config file", viper.ConfigFileUsed())
 	if viper.IsSet("server.letsencrypt") {
 		log.Debug("Serving letsencrypt")
-		server.StartLetsEncrypt(initialized, proxy)
+		server.StartLetsEncrypt(initialized, proxy, command)
 	} else if viper.IsSet("server.tls") {
 		log.Debug("Serving TLS!")
-		server.StartTLS(initialized, proxy)
+		server.StartTLS(initialized, proxy, command)
 	} else {
 		log.Debug("Serving Plain!")
-		server.StartNormal(initialized, proxy)
+		server.StartNormal(initialized, proxy, command)
 	}
 }
 
@@ -60,6 +61,13 @@ func checkProxy() bool {
 		return viper.GetBool("server.proxy")
 	}
 	return false
+}
+
+func getTurnOffCommand() string {
+	if viper.IsSet("server.command") {
+		return viper.GetString("server.command.option")
+	}
+	return "poweroff"
 }
 
 func checkIfFolderExist(loc string) error {

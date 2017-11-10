@@ -9,7 +9,7 @@ import (
 )
 
 //StartTLS deploy the normal tls endpoint secured server
-func StartTLS(alreadyInit, reverseProxy bool) {
+func StartTLS(alreadyInit, reverseProxy bool, command string) {
 	initialized = alreadyInit
 
 	if initialized {
@@ -20,6 +20,7 @@ func StartTLS(alreadyInit, reverseProxy bool) {
 	if reverseProxy {
 		handleProxy()
 	}
+	solcommand = command
 
 	err := http.ListenAndServeTLS(":5000", viper.GetString("server.tls.cert"), viper.GetString("server.tls.key"), handler)
 	if err != nil {

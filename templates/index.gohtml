@@ -52,10 +52,21 @@
                 url: window.location.href + "/ping/" + $("option:selected")
                 dataType: "json"
             }).done(function(data){
-                $("label[for='wake']").html(data["message"])
-                $("")
+                if data["message"]{
+                    $("label[for='wake']").html("alive")
+                    $("label[for='wake']").css("color","green")
+                    $("#sbmbtn").text("Turn Off")
+                } else {
+                    $("label[for='wake']").html("asleep")
+                    $("label[for='wake']").css("color","red")
+                    $("#sbmbtn").text("WakeUp")
+                }
+                $("#recapDiv").show()
+                $("#sbmbtn").show()
             }).fail(function(){
                 console.log('Got fail!!!!')
+                $("#sbmbtn").text("WakeUp")
+                $("#sbmbtn").show()
             })
          })
        }
@@ -122,13 +133,13 @@
               <input type="password" class="form-control" name="password" id="wakeupPassword" placeholder="Password">
             </div>
           </div>
-          <div class="for-group row">
+          <div id="recapDiv" class="for-group row" style="display: none;">
             <label class="col-sm-7">Device is currently</label>
             <label for="wake" class="col-sm-3 control-label"></label>
           </div>
           <div class="form-group">
                 <div class="col-sm-offset-4 col-sm-10">
-                    <button id="sbmbtn" type="submit" class="btn btn-large btn-primary">Wake Up!</button>
+                    <button id="sbmbtn" type="submit" class="btn btn-large btn-primary" style="display: none;">Text</button>
                 </div>
             </div>
         </form>
