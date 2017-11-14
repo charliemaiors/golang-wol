@@ -95,25 +95,25 @@ func handleGetDev(getDev *types.GetDev) {
 }
 
 func handleDeviceDel(delDev *types.DelDev) {
+	defer close(delDev.Response)
 	err := deleteDevice(delDev.Alias)
 	if err != nil {
 		delDev.Response <- err
 	}
-	close(delDev.Response)
 }
 
 func handlePass(passHandling *types.PasswordHandling) {
+	defer close(passHandling.Response)
 	log.Debugf("%v", passHandling)
 	err := checkPassword(passHandling.Password)
 	passHandling.Response <- err
-	close(passHandling.Response)
 }
 
 func handleUpdatePass(updatePass *types.PasswordUpdate) {
+	defer close(updatePass.Response)
 	log.Debug("%v", updatePass)
 	err := updatePassword(updatePass.OldPassword, updatePass.NewPassword)
 	updatePass.Response <- err
-	close(updatePass.Response)
 }
 
 func handleAliasRequest(aliasChan chan string) {

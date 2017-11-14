@@ -48,6 +48,7 @@ func addDevice(device *types.Device, name string) error {
 }
 
 func getAliasesFromStorage(aliasChan chan string) {
+	defer close(aliasChan)
 	log.Debugf("Got channel %v for alias retrieving", aliasChan)
 
 	db.View(func(transaction *storage.Tx) error {
