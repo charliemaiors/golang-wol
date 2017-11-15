@@ -40,5 +40,14 @@ func RunBot() {
 		if update.Message == nil {
 			continue
 		}
+
+		if !checkValidUser(update.Message.From) {
+
+		}
+
 	}
+}
+
+func checkValidUser(sender *tgbotapi.User) bool {
+	return sender.UserName == allowedUser.UserName && sender.FirstName == allowedUser.FirstName && sender.LastName == allowedUser.LastName
 }
