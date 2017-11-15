@@ -36,6 +36,7 @@ var (
 	pinger           *ping.Pinger
 	templateBox      *rice.Box
 	solcommand       string
+	turnOffPort      string
 	handler          http.Handler
 )
 

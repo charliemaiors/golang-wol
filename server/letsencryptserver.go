@@ -12,7 +12,7 @@ import (
 )
 
 //StartLetsEncrypt spawn a https web server powered by letsencrypt certificates
-func StartLetsEncrypt(alreadyInit, reverseProxy bool, command string) {
+func StartLetsEncrypt(alreadyInit, reverseProxy bool, command, port string) {
 	initialized = alreadyInit
 	host := viper.GetString("server.letsencrypt.host")
 	certDir := viper.GetString("server.letsencrypt.cert")
@@ -30,6 +30,7 @@ func StartLetsEncrypt(alreadyInit, reverseProxy bool, command string) {
 		handleProxy()
 	}
 	solcommand = command
+	turnOffPort = port
 
 	certManager := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,

@@ -187,7 +187,7 @@ func sendPacket(mac, ip string) error {
 }
 
 func turnOffDev(ip string) error {
-	resp, err := http.Post("http://"+ip+":7740/"+solcommand, "application/json", nil)
+	resp, err := http.Post("http://"+ip+":"+turnOffPort+"/"+solcommand, "application/json", nil)
 	if err != nil {
 		return err
 	}
