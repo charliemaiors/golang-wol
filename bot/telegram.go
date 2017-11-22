@@ -94,6 +94,7 @@ func deviceAdd(args string) string {
 		return "Usage: /add <device-alias> <device-ip> <device-mac>"
 	}
 	params := strings.Split(args, " ")
+
 }
 
 func getAllDevices() string {
