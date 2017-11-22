@@ -1,6 +1,8 @@
 package bot
 
 import (
+	"strings"
+
 	"github.com/charliemaiors/golang-wol/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -88,7 +90,10 @@ func handleUpdate(update tgbotapi.Update) {
 }
 
 func deviceAdd(args string) string {
-
+	if args == "" {
+		return "Usage: /add <device-alias> <device-ip> <device-mac>"
+	}
+	params := strings.Split(args, " ")
 }
 
 func getAllDevices() string {
