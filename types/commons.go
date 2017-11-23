@@ -52,6 +52,14 @@ type ResponseError struct {
 //WakeUpReport represent a report after wake up attempt
 type Report struct {
 	Alias  string
-	Alive bool
+	Alive  bool
 	Report map[time.Time]bool
+}
+
+func (dev *Device) String() string {
+	return "Mac " + dev.Mac + " IP " + dev.IP
+}
+
+func (alias *AliasResponse) String() string {
+	return "Added alias with name " + alias.Alias.Name + " and device data " + alias.Device.String()
 }

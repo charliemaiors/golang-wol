@@ -93,8 +93,22 @@ func deviceAdd(args string) string {
 	if args == "" {
 		return "Usage: /add <device-alias> <device-ip> <device-mac>"
 	}
-	params := strings.Split(args, " ")
 
+	params := strings.Split(args, " ")
+	if len(params) < 3 {
+		return "Usage: /add <device-alias> <device-ip> <device-mac>"
+	}
+
+	dev := &types.Device{IP: params[1], Mac: params[2]}
+	alias := types.Alias{Device: dev, Name: params[0]}
+	resp := make(chan struct{})
+	aliasResp := &types.AliasResponse{Alias: alias, Response: resp}
+	deviceChan <- aliasResp
+	respTmp := <-resp
+	if respTmp != nil {
+		return aliasResp.String()
+	}
+	return "Got error adding device"
 }
 
 func getAllDevices() string {
