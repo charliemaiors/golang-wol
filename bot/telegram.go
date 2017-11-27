@@ -68,16 +68,20 @@ func initBot(deviceChanDef chan *types.AliasResponse, getChanDef chan *types.Get
 func handleUpdate(update tgbotapi.Update) {
 	var msg tgbotapi.MessageConfig
 	if !checkValidUser(update.Message.From) {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "You are not allowed to chat with this bot")
+		msg = tgbotapi.NewMessage(update.Message.Chat.ID, "You are not allowed to chat with this bot")
 	}
 	if update.Message.IsCommand() {
 		switch update.Message.Command() {
 		case "list":
 			devices := getAllDevices()
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "You have registered this devices: "+devices)
+			msg = tgbotapi.NewMessage(update.Message.Chat.ID, "You have registered this devices: "+devices)
 		case "add":
 			args := update.Message.CommandArguments()
 			resp := deviceAdd(args)
+			msg = tgbotapi.NewMessage(update.Message.Chat.ID, resp)
+		case "wake":
+			args := update.Message.CommandArguments()
+			resp := deviceWake(args)
 		}
 
 	}
@@ -87,6 +91,14 @@ func handleUpdate(update tgbotapi.Update) {
 	if err != nil {
 		log.Errorf("Got error while sending answer %v", err)
 	}
+}
+
+func deviceWake(args string) string {
+	if args == "" {
+		return "Usage: /wake <device-alias>"
+	}
+	params := strings.Split(args, " ")
+
 }
 
 func deviceAdd(args string) string {
@@ -104,8 +116,8 @@ func deviceAdd(args string) string {
 	resp := make(chan struct{})
 	aliasResp := &types.AliasResponse{Alias: alias, Response: resp}
 	deviceChan <- aliasResp
-	respTmp := <-resp
-	if respTmp != nil {
+	_, ok := <-resp
+	if ok {
 		return aliasResp.String()
 	}
 	return "Got error adding device"
