@@ -1,10 +1,10 @@
 package config
 
 import (
-	"errors"
 	"os"
 
 	"github.com/charliemaiors/golang-wol/server"
+	"github.com/charliemaiors/golang-wol/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -46,7 +46,7 @@ func checkAlreadyRun() bool {
 	}
 	log.Debugf("Storage location is %s", loc)
 
-	err := checkIfFolderExist(loc)
+	err := utils.CheckIfFolderExist(loc)
 	if err != nil { //at least the storage folder could exist or MUST be created
 		panic(err)
 	}
@@ -76,15 +76,4 @@ func getTurnOffPort() string {
 		return viper.GetString("server.command.port")
 	}
 	return "7740"
-}
-
-func checkIfFolderExist(loc string) error {
-	info, err := os.Stat(loc)
-	if os.IsNotExist(err) {
-		err = os.MkdirAll(loc, os.ModeDir)
-		return err
-	} else if !info.IsDir() {
-		return errors.New("Exist but is not a folder")
-	}
-	return nil
 }

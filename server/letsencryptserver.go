@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/charliemaiors/golang-wol/storage"
+	"github.com/charliemaiors/golang-wol/utils"
 
 	"github.com/spf13/viper"
 
@@ -17,7 +18,7 @@ func StartLetsEncrypt(alreadyInit, reverseProxy bool, command, port string) {
 	host := viper.GetString("server.letsencrypt.host")
 	certDir := viper.GetString("server.letsencrypt.cert")
 
-	err := checkIfFolderExist(certDir)
+	err := utils.CheckIfFolderExist(certDir)
 	if err != nil { //Please insert a valid cert path
 		panic(err)
 	}
