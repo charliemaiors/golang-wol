@@ -26,6 +26,8 @@ func Start() {
 	proxy := checkProxy()
 	command := getTurnOffCommand()
 	port := getTurnOffPort()
+	telegram := isBotEnabled() //TODO add to server for telegram instantiation
+	log.Debug(telegram)
 	log.Debugf("used %s config file", viper.ConfigFileUsed())
 	if viper.IsSet("server.letsencrypt") {
 		log.Debug("Serving letsencrypt")
@@ -57,11 +59,19 @@ func checkAlreadyRun() bool {
 	return true
 }
 
+func isBotEnabled() bool {
+	return viper.IsSet("bot.telegram")
+}
+
 func checkProxy() bool {
 	if viper.IsSet("server.proxy") {
 		return viper.GetBool("server.proxy")
 	}
 	return false
+}
+
+func isTelegramEnabled() bool {
+	return viper.IsSet("bot.telegram")
 }
 
 func getTurnOffCommand() string {

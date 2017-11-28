@@ -31,6 +31,7 @@ var (
 
 //RunBot starts the telegram bot based on configuration file, this bot will not use password checking because auth is made using allowed user
 func RunBot(deviceChan chan *types.AliasResponse, getChan chan *types.GetDev, delDevChan chan *types.DelDev, passHandlingChan chan *types.PasswordHandling, updatePassChan chan *types.PasswordUpdate, getAliases chan chan string) {
+	checkBotConfiguration()
 	initBot(deviceChan, getChan, delDevChan, getAliases)
 	var err error
 	token := viper.GetString("bot.telegram.token")
@@ -56,6 +57,12 @@ func RunBot(deviceChan chan *types.AliasResponse, getChan chan *types.GetDev, de
 		}
 		go handleUpdate(update)
 
+	}
+}
+
+func checkBotConfiguration() {
+	if !viper.IsSet("bot.telegram.token") || !viper.IsSet("bot.telegram.firstname") || !viper.IsSet("bot.telegram.lastname") || !viper.IsSet("bot.telegram.username") {
+		panic("Bot not properly configured")
 	}
 }
 
