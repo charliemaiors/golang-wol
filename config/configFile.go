@@ -22,23 +22,41 @@ func init() {
 
 //Start is used to start the service with provided configuration
 func Start() {
+	err := configureLog()
+	if err != nil { //If something went wrong with configured log the application could not start!!!
+		panic(err)
+	}
+
 	initialized := checkAlreadyRun()
 	proxy := checkProxy()
 	command := getTurnOffCommand()
 	port := getTurnOffPort()
 	telegram := isBotEnabled() //TODO add to server for telegram instantiation
-	log.Debug(telegram)
+
 	log.Debugf("used %s config file", viper.ConfigFileUsed())
 	if viper.IsSet("server.letsencrypt") {
 		log.Debug("Serving letsencrypt")
-		server.StartLetsEncrypt(initialized, proxy, command, port)
+		server.StartLetsEncrypt(initialized, proxy, telegram, command, port)
 	} else if viper.IsSet("server.tls") {
 		log.Debug("Serving TLS!")
-		server.StartTLS(initialized, proxy, command, port)
+		server.StartTLS(initialized, proxy, telegram, command, port)
 	} else {
 		log.Debug("Serving Plain!")
-		server.StartNormal(initialized, proxy, command, port)
+		server.StartNormal(initialized, proxy, telegram, command, port)
 	}
+}
+
+func configureLog() error {
+	if viper.IsSet("server.log") {
+		f, err := os.OpenFile(viper.GetString("server.log"), os.O_WRONLY|os.O_CREATE, 0755)
+		if err != nil {
+			return err
+		}
+		log.SetOutput(f)
+		return nil
+	}
+	log.SetOutput(os.Stderr)
+	return nil
 }
 
 func checkAlreadyRun() bool {

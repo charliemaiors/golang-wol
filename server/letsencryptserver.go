@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"net/http"
 
+	"github.com/charliemaiors/golang-wol/bot"
 	"github.com/charliemaiors/golang-wol/storage"
 	"github.com/charliemaiors/golang-wol/utils"
 
@@ -13,8 +14,9 @@ import (
 )
 
 //StartLetsEncrypt spawn a https web server powered by letsencrypt certificates
-func StartLetsEncrypt(alreadyInit, reverseProxy bool, command, port string) {
+func StartLetsEncrypt(alreadyInit, reverseProxy, telegram bool, command, port string) {
 	initialized = alreadyInit
+	telebot = telegram
 	host := viper.GetString("server.letsencrypt.host")
 	certDir := viper.GetString("server.letsencrypt.cert")
 
@@ -25,6 +27,10 @@ func StartLetsEncrypt(alreadyInit, reverseProxy bool, command, port string) {
 
 	if initialized {
 		go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
+	}
+
+	if telegram { //telegram bot does not require any password because of the authorized user
+		go bot.RunBot(deviceChan, getChan, delDevChan, aliasRequestChan)
 	}
 
 	if reverseProxy {

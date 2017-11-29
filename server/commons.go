@@ -317,7 +317,7 @@ func handleConfigInit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storage.InitLocal(password)
-	go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
+	go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)s
 
 	initialized = true
 	tmpbl, err := templateBox.String("config-success.gohtml")
