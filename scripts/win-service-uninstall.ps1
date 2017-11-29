@@ -1,2 +1,2 @@
-nssm stop sleeponlan
-nssm remove sleeponlan
+nssm stop golangwol
+nssm remove golangwol

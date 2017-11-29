@@ -28,7 +28,7 @@ if (Test-Path "$env:GOPATH\bin\wolsrv.exe")
     $path = Read-Host 'Please insert the full path where wolsrv.exe is installed'
 }
 
-nssm install sleeponlan "$path"
+nssm install golangwol "$path"
 nssm set sleeponlan DisplayName "Sleep on Lan service"
 nssm set sleeponlan Description "Simple Sleep on Lan service"
 nssm start sleeponlan
