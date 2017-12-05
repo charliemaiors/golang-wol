@@ -87,10 +87,9 @@ func handleGetDev(getDev *types.GetDev) {
 	log.Debug("%v", getDev)
 	device, err := getDevice(getDev.Alias)
 	if err != nil {
-		close(getDev.Response)
+		getDev.Response <- nil
 	} else {
 		getDev.Response <- device
-		close(getDev.Response)
 	}
 }
 

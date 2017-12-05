@@ -10,9 +10,9 @@ import (
 	"strings"
 
 	rice "github.com/GeertJohan/go.rice"
-	ping "github.com/charliemaiors/go-fastping"
 	"github.com/charliemaiors/golang-wol/storage"
 	"github.com/charliemaiors/golang-wol/types"
+	"github.com/charliemaiors/golang-wol/utils"
 	"github.com/gorilla/handlers"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
@@ -33,7 +33,6 @@ var (
 	devStatus        = make(map[string]bool) //represent a sort of cache used for device status retrieve
 	aliasRequestChan = make(chan chan string)
 	reMAC            = regexp.MustCompile(`^([0-9a-fA-F]{2}[` + delims + `]){5}([0-9a-fA-F]{2})$`)
-	pinger           *ping.Pinger
 	templateBox      *rice.Box
 	solcommand       string
 	turnOffPort      string
@@ -41,7 +40,6 @@ var (
 )
 
 func init() {
-	pinger = ping.NewPinger()
 	log.SetLevel(log.DebugLevel)
 	configRouter()
 }
@@ -254,7 +252,7 @@ func handlePing(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
-	alive := checkHealt(dev.IP)
+	alive := utils.CheckHealt(dev.IP)
 
 	resp := struct {
 		Message bool `json:"message"`
@@ -319,7 +317,7 @@ func handleConfigInit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storage.InitLocal(password)
-	go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
+	go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)s
 
 	initialized = true
 	tmpbl, err := templateBox.String("config-success.gohtml")
@@ -413,7 +411,7 @@ func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	}
 
 	log.Debugf("Packet sent, now waiting for wake up")
-	report, pingErr := pingHost(dev.IP, alive)
+	report, pingErr := utils.PingHost(dev.IP, alive)
 	if pingErr != nil {
 		log.Errorf("Got error %v pinging, the executables has right capacity? if no use setcap cap_net_raw=+ep golang-wol", pingErr)
 		handleError(w, r, pingErr, http.StatusInternalServerError)
@@ -431,14 +429,14 @@ func handleRootPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 func handleDeviceAction(alive bool, dev *types.Device) error {
 	if alive {
 		log.Debugf("Device %v, sending command", dev)
-		err := turnOffDev(dev.IP)
+		err := utils.TurnOffDev(dev.IP, turnOffPort, solcommand)
 		if err != nil {
 			log.Errorf("Got error sending command %v", err)
 			return err
 		}
 	} else {
 		log.Debugf("Device %v, sending packets", dev)
-		err := sendPacket(dev.Mac, dev.IP)
+		err := utils.SendPacket(dev.Mac, dev.IP)
 		if err != nil {
 			log.Errorf("Got error sending packets %v", err)
 			return err
