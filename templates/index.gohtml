@@ -49,7 +49,7 @@
             $.ajax({
                 async: false,
                 type:"POST",
-                url: window.location.href + "/ping/" + $("option:selected")
+                url: window.location.href + "/ping/" + $("option:selected"),
                 dataType: "json"
             }).done(function(data){
                 if data["message"]{
