@@ -118,7 +118,7 @@ func CheckHealt(ip string) bool {
 	}
 	ticker.Stop()
 	// if !alive {
-	// 	pinger.Stop()
+	pinger.Stop()
 	// }
 	return alive
 }
