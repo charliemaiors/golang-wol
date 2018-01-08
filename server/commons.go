@@ -42,16 +42,16 @@ var (
 
 func init() {
 	log.SetLevel(log.DebugLevel)
-	configRouter()
+
 }
 
-func loadBox() {
+func configureBox() {
 	var err error
 	templateBox, err = rice.FindBox("../templates")
 	if err != nil {
 		panic(err)
 	}
-	log.Debugf("Is embedded? %v", templateBox.IsEmbedded())
+	configRouter()
 }
 
 func handleProxy() {

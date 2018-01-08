@@ -26,7 +26,7 @@ func (srv *TLSServer) Start(alreadyInit, reverseProxy, telegram bool, proxyPrefi
 		go bot.RunBot(deviceChan, getChan, delDevChan, aliasRequestChan)
 	}
 
-	loadBox()
+	configureBox()
 	if reverseProxy {
 		handleProxy()
 	}

@@ -46,6 +46,8 @@ func (srv *LetsEncryptServer) Start(alreadyInit, reverseProxy, telegram bool, pr
 		Cache:      autocert.DirCache(srv.CertDir),   //folder for storing certificates
 	}
 
+	configureBox()
+
 	server := &http.Server{
 		Addr: ":443", //Different port from 443 could be hard for acme-tlsni-challenge
 		TLSConfig: &tls.Config{
@@ -53,7 +55,6 @@ func (srv *LetsEncryptServer) Start(alreadyInit, reverseProxy, telegram bool, pr
 		},
 		Handler: handler,
 	}
-	loadBox()
 
 	err = server.ListenAndServeTLS("", "")
 

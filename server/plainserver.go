@@ -24,7 +24,7 @@ func (srv *PlainServer) Start(alreadyInit, reverseProxy, telegram bool, proxyPre
 		go bot.RunBot(deviceChan, getChan, delDevChan, aliasRequestChan)
 	}
 
-	loadBox()
+	configureBox()
 
 	if reverseProxy {
 		handleProxy()
