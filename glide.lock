@@ -1,10 +1,10 @@
 hash: 8cea5a9b9d5bfaaa30847a7e997706be4e471bea4ad8e85afa4221e48512240e
-updated: 2017-11-10T15:17:58.712962+01:00
+updated: 2018-01-08T23:09:37.694742675Z
 imports:
 - name: github.com/charliemaiors/go-fastping
-  version: 6bca2fc37f8d09ed7afe0fab5f6a8df794aff853
+  version: 09eb6883b5ad5cc7c6be070085c000d56f104273
 - name: github.com/coreos/bbolt
-  version: 3c6cbfb299c11444eb2f8c9d48f0d2ce09157423
+  version: 48ea1b39c25fc1bab3506fbc712ecbaa842c4d2d
 - name: github.com/daaku/go.zipexe
   version: a5fe2436ffcb3236e175e5149162b41cd28bd27d
 - name: github.com/fsnotify/fsnotify
@@ -35,13 +35,13 @@ imports:
 - name: github.com/mitchellh/mapstructure
   version: 06020f85339e21b2478f756a78e295255ffa4d6a
 - name: github.com/pelletier/go-toml
-  version: 4e9e0ee19b60b13eb79915933f44d8ed5f268bdd
+  version: 0131db6d737cfbbfb678f8b7d92e55e27ce46224
 - name: github.com/sabhiram/go-wol
   version: dfbff1fb80e2a494b89421ba94fa13a58b2070fa
 - name: github.com/sirupsen/logrus
-  version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
+  version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
 - name: github.com/spf13/afero
-  version: 5660eeed305fe5f69c8fc6cf899132a459a97064
+  version: 57afd63c68602b63ed976de00dd066ccb3c319db
   subpackages:
   - mem
 - name: github.com/spf13/cast
@@ -55,7 +55,7 @@ imports:
 - name: github.com/technoweenie/multipartstreamer
   version: a90a01d73ae432e2611d178c18367fbaa13e0154
 - name: golang.org/x/crypto
-  version: 6a293f2d4b14b8e6d3f0539e383f6d0d30fce3fd
+  version: 0fcca4842a8d74bfddc2c96a073bd2a4d2a7a2e8
   subpackages:
   - acme
   - acme/autocert
@@ -63,7 +63,7 @@ imports:
   - blowfish
   - ssh/terminal
 - name: golang.org/x/net
-  version: a337091b0525af65de94df2eb7e98bd9962dcbe2
+  version: 434ec0c7fe3742c984919a691b2018a6e9694425
   subpackages:
   - bpf
   - icmp
@@ -72,17 +72,17 @@ imports:
   - ipv4
   - ipv6
 - name: golang.org/x/sys
-  version: 1e2299c37cc91a509f1b12369872d27be0ce98a6
+  version: 2493af8e3bc76234993370d82120c7e15ed4c95b
   subpackages:
   - unix
   - windows
 - name: golang.org/x/text
-  version: 88f656faf3f37f690df1a32515b479415e1a6769
+  version: e19ae1496984b1c655b8044a65c0300a3c878dd3
   subpackages:
   - transform
   - unicode/norm
 - name: gopkg.in/telegram-bot-api.v4
   version: 2022d04b94f50056a09962b1ac81cdd821d20a55
 - name: gopkg.in/yaml.v2
-  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+  version: 1244d3ce02e3e1c16820ada0bae506b6c479f106
 testImports: []

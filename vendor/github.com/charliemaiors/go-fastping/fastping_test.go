@@ -165,7 +165,7 @@ func TestRun(t *testing.T) {
 			t.Fatalf("AddIP failed: %v", err)
 		}
 
-		if err := p.AddIP("127.0.0.100"); err != nil {
+		if err := p.AddIP("117.0.0.100"); err != nil {
 			t.Fatalf("AddIP failed: %v", err)
 		}
 
@@ -179,7 +179,7 @@ func TestRun(t *testing.T) {
 			called = true
 			if ip.String() == "127.0.0.1" {
 				found1 = true
-			} else if ip.String() == "127.0.0.100" {
+			} else if ip.String() == "117.0.0.100" {
 				found100 = true
 			} else if ip.String() == "::1" {
 				foundv6 = true
@@ -204,7 +204,7 @@ func TestRun(t *testing.T) {
 			t.Fatalf("Pinger `127.0.0.1` didn't respond")
 		}
 		if found100 {
-			t.Fatalf("Pinger `127.0.0.100` responded")
+			t.Fatalf("Pinger `117.0.0.100` responded")
 		}
 		if !foundv6 {
 			t.Fatalf("Pinger `::1` didn't responded")
