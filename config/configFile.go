@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var srv server.Server
+
 func init() {
 	viper.AddConfigPath("./config/")
 	viper.AddConfigPath("/etc/wol/")
@@ -23,27 +25,38 @@ func init() {
 //Start is used to start the service with provided configuration
 func Start() {
 	err := configureLog()
+	srv = configureSrv()
 	if err != nil { //If something went wrong with configured log the application could not start!!!
 		panic(err)
 	}
 
 	initialized := checkAlreadyRun()
-	proxy := checkProxy()
+	proxy, proxyPrefix := checkProxy()
 	command := getTurnOffCommand()
 	port := getTurnOffPort()
 	telegram := isBotEnabled() //TODO add to server for telegram instantiation
 
 	log.Debugf("used %s config file", viper.ConfigFileUsed())
+
+	srv.Start(initialized, proxy, telegram, proxyPrefix, command, port)
+}
+
+func configureSrv() server.Server {
 	if viper.IsSet("server.letsencrypt") {
-		log.Debug("Serving letsencrypt")
-		server.StartLetsEncrypt(initialized, proxy, telegram, command, port)
-	} else if viper.IsSet("server.tls") {
-		log.Debug("Serving TLS!")
-		server.StartTLS(initialized, proxy, telegram, command, port)
-	} else {
-		log.Debug("Serving Plain!")
-		server.StartNormal(initialized, proxy, telegram, command, port)
+		log.Debug("configuring letsencrypt")
+		return &server.LetsEncryptServer{
+			CertDir: viper.GetString("server.letsencrypt.cert"),
+			Host:    viper.GetString("server.letsencrypt.host"),
+		}
 	}
+	if viper.IsSet("server.tls") {
+		return &server.TLSServer{
+			TLSCert: viper.GetString("server.tls.cert"),
+			TLSKey:  viper.GetString("server.tls.key"),
+		}
+	}
+
+	return &server.PlainServer{}
 }
 
 func configureLog() error {
@@ -81,11 +94,11 @@ func isBotEnabled() bool {
 	return viper.IsSet("bot.telegram")
 }
 
-func checkProxy() bool {
+func checkProxy() (bool, string) {
 	if viper.IsSet("server.proxy") {
-		return viper.GetBool("server.proxy")
+		return viper.GetBool("server.proxy.enabled"), viper.GetString("server.proxy.prefix")
 	}
-	return false
+	return false, ""
 }
 
 func isTelegramEnabled() bool {

@@ -8,19 +8,20 @@ import (
 	"github.com/charliemaiors/golang-wol/storage"
 	"github.com/charliemaiors/golang-wol/utils"
 
-	"github.com/spf13/viper"
-
 	"golang.org/x/crypto/acme/autocert"
 )
 
-//StartLetsEncrypt spawn a https web server powered by letsencrypt certificates
-func StartLetsEncrypt(alreadyInit, reverseProxy, telegram bool, command, port string) {
-	initialized = alreadyInit
-	telebot = telegram
-	host := viper.GetString("server.letsencrypt.host")
-	certDir := viper.GetString("server.letsencrypt.cert")
+type LetsEncryptServer struct {
+	Host    string
+	CertDir string
+}
 
-	err := utils.CheckIfFolderExist(certDir)
+//StartLetsEncrypt spawn a https web server powered by letsencrypt certificates
+func (srv *LetsEncryptServer) Start(alreadyInit, reverseProxy, telegram bool, proxyPrefix, command, port string) {
+	initialized = alreadyInit
+	prefix = proxyPrefix
+
+	err := utils.CheckIfFolderExist(srv.CertDir)
 	if err != nil { //Please insert a valid cert path
 		panic(err)
 	}
@@ -41,8 +42,8 @@ func StartLetsEncrypt(alreadyInit, reverseProxy, telegram bool, command, port st
 
 	certManager := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist(host), //your domain here
-		Cache:      autocert.DirCache(certDir),   //folder for storing certificates
+		HostPolicy: autocert.HostWhitelist(srv.Host), //your domain here
+		Cache:      autocert.DirCache(srv.CertDir),   //folder for storing certificates
 	}
 
 	server := &http.Server{

@@ -36,6 +36,7 @@ var (
 	templateBox      *rice.Box
 	solcommand       string
 	turnOffPort      string
+	prefix           = ""
 	handler          http.Handler
 )
 
@@ -63,28 +64,28 @@ func configRouter() {
 	router.MethodNotAllowed = handleNotAllowed
 	router.NotFound = handleNotFound
 
-	router.GET("/manage-dev", handleManageDevicesGet)
-	router.POST("/manage-dev", handleManageDevicePost)
+	router.GET(prefix+"/manage-dev", handleManageDevicesGet)
+	router.POST(prefix+"/manage-dev", handleManageDevicePost)
 
-	router.GET("/devices", handleDevicesGet)
-	router.POST("/devices/:alias", handleDevicePost)
-	router.GET("/devices/:alias", handleDeviceGet)
-	router.DELETE("/devices/:alias", handleDeviceDelete)
+	router.GET(prefix+"/devices", handleDevicesGet)
+	router.POST(prefix+"/devices/:alias", handleDevicePost)
+	router.GET(prefix+"/devices/:alias", handleDeviceGet)
+	router.DELETE(prefix+"/devices/:alias", handleDeviceDelete)
 
-	router.GET("/", handleRootGet)
-	router.POST("/", handleRootPost)
+	router.GET(prefix+"/", handleRootGet)
+	router.POST(prefix+"/", handleRootPost)
 
-	router.POST("/ping/:alias", handlePing)
+	router.POST(prefix+"/ping/:alias", handlePing)
 
-	router.GET("/config", handleConfigGet)
-	router.POST("/config", handleConfigPost)
+	router.GET(prefix+"/config", handleConfigGet)
+	router.POST(prefix+"/config", handleConfigPost)
 
 	handler = router
 }
 
 func handleManageDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if !initialized {
-		http.Redirect(w, r, "/config", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, prefix+"/config", http.StatusTemporaryRedirect)
 		return
 	}
 	tmpbl, err := templateBox.String("add-device.gohtml")
@@ -100,7 +101,7 @@ func handleManageDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter
 
 func handleManageDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if !initialized {
-		http.Redirect(w, r, "/config", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, prefix+"/config", http.StatusTemporaryRedirect)
 		return
 	}
 
@@ -317,7 +318,7 @@ func handleConfigInit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storage.InitLocal(password)
-	go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)s
+	go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
 
 	initialized = true
 	tmpbl, err := templateBox.String("config-success.gohtml")

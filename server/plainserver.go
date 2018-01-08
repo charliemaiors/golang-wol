@@ -7,9 +7,14 @@ import (
 	"github.com/charliemaiors/golang-wol/storage"
 )
 
-//StartNormal start the plain http server without any encryption
-func StartNormal(alreadyInit, reverseProxy, telegram bool, command, port string) {
+//PlainServer represent the structure for http plain server
+type PlainServer struct {
+}
+
+//Start start the plain http server without any encryption
+func (srv *PlainServer) Start(alreadyInit, reverseProxy, telegram bool, proxyPrefix, command, port string) {
 	initialized = alreadyInit
+	prefix = proxyPrefix
 
 	if initialized {
 		go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)

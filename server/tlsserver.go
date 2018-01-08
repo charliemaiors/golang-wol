@@ -5,14 +5,18 @@ import (
 
 	"github.com/charliemaiors/golang-wol/bot"
 	"github.com/charliemaiors/golang-wol/storage"
-
-	"github.com/spf13/viper"
 )
 
-//StartTLS deploy the normal tls endpoint secured server
-func StartTLS(alreadyInit, reverseProxy, telegram bool, command, port string) {
+//TLSServer is the structure used in order to deploy a TLS secured server
+type TLSServer struct {
+	TLSCert string
+	TLSKey  string
+}
+
+//Start deploy the normal tls endpoint secured server
+func (srv *TLSServer) Start(alreadyInit, reverseProxy, telegram bool, proxyPrefix, command, port string) {
 	initialized = alreadyInit
-	telebot = telegram
+	prefix = proxyPrefix
 
 	if initialized {
 		go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
@@ -29,7 +33,7 @@ func StartTLS(alreadyInit, reverseProxy, telegram bool, command, port string) {
 	solcommand = command
 	turnOffPort = port
 
-	err := http.ListenAndServeTLS(":5000", viper.GetString("server.tls.cert"), viper.GetString("server.tls.key"), handler)
+	err := http.ListenAndServeTLS(":5000", srv.TLSCert, srv.TLSKey, handler)
 	if err != nil {
 		panic(err)
 	}
