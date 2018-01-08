@@ -118,5 +118,4 @@ func handleUpdatePass(updatePass *types.PasswordUpdate) {
 func handleAliasRequest(aliasChan chan string) {
 	log.Debug("Got all alias request")
 	getAliasesFromStorage(aliasChan)
-	close(aliasChan)
 }
