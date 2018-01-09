@@ -4,3 +4,8 @@ package server
 type Server interface {
 	Start(alreadyInit, reverseProxy, telegram bool, proxyPrefix, command, port string)
 }
+
+type ConfigSuccess struct {
+	AlreadyInit bool
+	Prefix      string
+}

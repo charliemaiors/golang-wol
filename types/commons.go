@@ -14,6 +14,12 @@ type Alias struct {
 	Name   string
 }
 
+//DevPageAlias is the full structure of device plus a common name used as alias and prefix
+type DevPageAlias struct {
+	Alias
+	Prefix string
+}
+
 type AliasResponse struct {
 	Alias
 	Response chan struct{}

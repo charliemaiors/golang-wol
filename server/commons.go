@@ -155,6 +155,7 @@ func handleDeviceGet(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 		return
 	}
 	alias := types.Alias{Device: dev, Name: deviceName}
+	devPageAlias := types.DevPageAlias{Prefix: prefix, Alias: alias}
 
 	tmpbl, err := templateBox.String("device.gohtml")
 	if err != nil {
@@ -163,7 +164,7 @@ func handleDeviceGet(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 		return
 	}
 	templ := template.Must(template.New("devGet").Parse(tmpbl))
-	templ.Execute(w, alias)
+	templ.Execute(w, devPageAlias)
 }
 
 func handleDeviceDelete(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -325,8 +326,9 @@ func handleConfigInit(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
+	configSuccess := ConfigSuccess{AlreadyInit: false, Prefix: prefix}
 	templ := template.Must(template.New("confSucc").Parse(tmpbl))
-	err = templ.Execute(w, false)
+	err = templ.Execute(w, configSuccess)
 	if err != nil {
 		panic(err)
 	}
@@ -357,8 +359,10 @@ func handleConfigUpdate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
+
+	configSuccess := ConfigSuccess{AlreadyInit: true, Prefix: prefix}
 	templ := template.Must(template.New("confUpd").Parse(tmpbl))
-	err = templ.Execute(w, true)
+	err = templ.Execute(w, configSuccess)
 	if err != nil {
 		panic(err)
 	}

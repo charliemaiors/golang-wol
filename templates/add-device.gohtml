@@ -45,6 +45,15 @@
         </style>
         <!-- jQuery!!! -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script>
+        $(document).ready(function(){
+            $("#home").href = window.location.href;
+            $("#dev").href = window.location.href + "devices";
+            $("#addDev").href = window.location.href + "manage-dev";
+            $("#config").href = window.location.href + "devices";
+            $("#mngDev").attr('action',window.location.href)
+        })
+      </script>
 
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -76,20 +85,20 @@
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav">
-                    <li><a href="/">Home<span class="sr-only">(current)</span></a></li>
+                    <li><a id="home" href="/">Home<span class="sr-only">(current)</span></a></li>
                     <li class="active dropdown">
-                        <a href="/devices" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Devices<span class="caret"></span></a>
+                        <a id="dev" href="/devices" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Devices<span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                        <li><a href="/manage-dev">Add Device</a></li>
+                        <li><a id="addDev" href="/manage-dev">Add Device</a></li>
                         </ul>
                     </li>
-                    <li><a href="/config">Configuration</a></li>
+                    <li><a id="config" href="/config">Configuration</a></li>
                     </ul>
                 </div><!-- /.navbar-collapse -->
             </div><!-- /.container-fluid -->
         </nav>
         <div class="container-fluid">
-            <form class="form-horizontal" action="/manage-dev" method="POST">
+            <form class="form-horizontal" id="mngDev" action="/manage-dev" method="POST">
                 <h2 class="form-horizontal-heading">Add a new device</h2>
                 <p class="form-horizontal-heading">Please fill the form with device data</p>
                 <div class="form-group row">

@@ -99,6 +99,15 @@
             })
         })
       </script>
+      <script>
+        $(document).ready(function(){
+            $("#home").href = window.location.href;
+            $("#dev").href = window.location.href + "devices";
+            $("#addDev").href = window.location.href + "manage-dev";
+            $("#config").href = window.location.href + "devices";
+            $("#wake-form").attr('action',window.location.href)
+        })
+      </script>
       <!-- Latest compiled and minified CSS -->
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
@@ -129,20 +138,20 @@
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav">
-                    <li class="active"><a href="/">Home<span class="sr-only">(current)</span></a></li>
+                    <li class="active"><a href="/" id="home">Home<span class="sr-only">(current)</span></a></li>
                     <li class="dropdown">
-                        <a href="/devices" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Devices<span class="caret"></span></a>
+                        <a href="/devices" id="dev" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Devices<span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                        <li><a href="/manage-dev">Add Device</a></li>
+                        <li><a href="/manage-dev" id="addDev">Add Device</a></li>
                         </ul>
                     </li>
-                    <li><a href="/config">Configuration</a></li>
+                    <li><a href="/config" id="config">Configuration</a></li>
                     </ul>
                 </div><!-- /.navbar-collapse -->
             </div><!-- /.container-fluid -->
         </nav>
       <div class="container-fluid">
-        <form class="form-horizontal" action="/" method="POST"> 
+        <form class="form-horizontal" id="wake-form" action="/" method="POST"> 
           <h2 class="form-horizontal-heading">Select Target Device</h2>
           <p class="form-horizontal-heading">Select target</p>
           <div class="form-group row">
