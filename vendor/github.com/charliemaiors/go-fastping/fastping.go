@@ -374,7 +374,9 @@ func (p *Pinger) Stop() {
 	p.debugln("Stop(): close(p.ctx.stop)")
 	close(p.ctx.stop)
 	p.debugln("Stop(): <-p.ctx.done")
-	close(p.ctx.done)
+	if _, ok := <-p.ctx.done; ok {
+		close(p.ctx.done)
+	}
 }
 
 // Err returns an error that is set by RunLoop(). It must be called after
