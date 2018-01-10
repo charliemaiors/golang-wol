@@ -36,9 +36,9 @@
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
             <script>
                 $(document).ready(function(){
-                    $("#home").attr('href', "/" + {{ .Prefix }});
-                    $("#dev").attr('href',"/" + {{ .Prefix }} + "/devices");
-                    $("#addDev").attr('href', "/" + {{ .Prefix }} + "/manage-dev");
+                    $("#home").attr('href', window.location.protocol + "//" + window.location.host + {{ .Prefix }});
+                    $("#dev").attr('href', window.location.protocol + "//" + window.location.host + {{ .Prefix }} + "/devices");
+                    $("#addDev").attr('href', window.location.protocol + "//" + window.location.host + {{ .Prefix }} + "/manage-dev");
                     $("#config").attr('href', window.location.href);
                 })
             </script>
