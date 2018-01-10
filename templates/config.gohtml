@@ -47,7 +47,7 @@
 
         <script>
             $(document).ready(function(){
-                $("#home").attr('href', "/" + {{ . }});
+                $("#home").attr('href', window.location.host + {{ . }});
                 $("#dev").attr('href', "/" + {{ . }} + "/devices");
                 $("#addDev").attr('href', "/" + {{ . }} + "/manage-dev");
                 $("#config").attr('href', window.location.href);
