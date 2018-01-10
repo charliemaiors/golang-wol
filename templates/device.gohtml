@@ -98,10 +98,10 @@
             </script>
             <script>
                 $(document).ready(function(){
-                    $("#home").attr('href', window.location.hostname + {{ .Prefix }});
+                    $("#home").attr('href', "/" + {{ .Prefix }});
                     $("#dev").attr('href', window.location.href);
-                    $("#addDev").attr('href',window.location.hostname + {{ .Prefix }} + "manage-dev");
-                    $("#config").attr('href',window.location.hostname + {{ .Prefix }} + "config");
+                    $("#addDev").attr('href',"/" + {{ .Prefix }} + "manage-dev");
+                    $("#config").attr('href', "/" + {{ .Prefix }} + "config");
                 })
             </script>
         </head>

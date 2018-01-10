@@ -35,12 +35,12 @@
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
             <script>
                 $(document).ready(function(){
-                    $("#home").attr('href', window.location.hostname {{ .Prefix }});
-                    $("#homeLink").attr('href', window.location.hostname {{ .Prefix }});
-                    $("#dev").attr('href', window.location.hostname {{ .Prefix }} + "/devices");
-                    $("#devLink").attr('href', window.location.hostname {{ .Prefix }} + "/devices");
+                    $("#home").attr('href', "/" + {{ .Prefix }});
+                    $("#homeLink").attr('href', "/" + {{ .Prefix }});
+                    $("#dev").attr('href', "/" + {{ .Prefix }} + "/devices");
+                    $("#devLink").attr('href', "/" + {{ .Prefix }} + "/devices");
                     $("#addDev").attr('href', window.location.href);
-                    $("#config").attr('href',window.location.hostname {{ .Prefix }} + "/config");
+                    $("#config").attr('href', "/" + {{ .Prefix }} + "/config");
                 })
             </script>
             
