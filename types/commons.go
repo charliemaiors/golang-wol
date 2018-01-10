@@ -53,6 +53,7 @@ type PasswordUpdate struct {
 //ResponseError retrieves particular response error
 type ResponseError struct {
 	Message string
+	Prefix  string
 }
 
 //WakeUpReport represent a report after wake up attempt

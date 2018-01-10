@@ -456,6 +456,7 @@ func handleDeviceAction(alive bool, dev *types.Device) error {
 func handleError(w http.ResponseWriter, r *http.Request, err error, errCode int) {
 	response := types.ResponseError{
 		Message: err.Error(),
+		Prefix:  prefix,
 	}
 	w.WriteHeader(errCode)
 	tmpbl, err := templateBox.String("error.gohtml")
