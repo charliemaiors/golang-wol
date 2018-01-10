@@ -45,15 +45,17 @@
         </style>
         <!-- jQuery!!! -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-        <script>
-        $(document).ready(function(){
-            $("#home").href = window.location.href;
-            $("#dev").href = window.location.href + "devices";
-            $("#addDev").href = window.location.href + "manage-dev";
-            $("#config").href = window.location.href + "devices";
-            $("#mngDev").attr('action',window.location.href)
-        })
-      </script>
+        {{ with . }}
+            <script>
+                $(document).ready(function(){
+                    $("#home").href = window.location.hostname + {{ . }};
+                    $("#dev").href = window.location.hostname + {{ . }} + "/devices";
+                    $("#addDev").href = window.location.href;
+                    $("#config").href = window.location..hostname + {{ . }} + "/config";
+                    $("#mngDev").attr('action',window.location.href)
+                })
+            </script>
+        {{ end }}
 
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">

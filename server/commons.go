@@ -93,7 +93,7 @@ func handleManageDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter
 		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
 	templ := template.Must(template.New("addDev").Parse(tmpbl))
-	err = templ.Execute(w, nil)
+	err = templ.Execute(w, prefix)
 	if err != nil {
 		panic(err)
 	}
@@ -120,6 +120,7 @@ func handleManageDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter
 	}
 
 	alias, regErr := registerOrUpdateDevice(r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ipAddr"))
+	aliasDef := types.DevPageAlias{Alias: *alias, Prefix: prefix}
 	if regErr != nil {
 		log.Errorf("Error registering %v", regErr)
 		handleError(w, r, err, http.StatusUnprocessableEntity)
@@ -132,7 +133,7 @@ func handleManageDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 	templ := template.Must(template.New("addDevSucc").Parse(tmpbl))
-	templ.Execute(w, alias)
+	templ.Execute(w, aliasDef)
 }
 
 func handleDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -141,8 +142,9 @@ func handleDevicesGet(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	if err != nil {
 		handleError(w, r, err, http.StatusUnprocessableEntity)
 	}
+	templateStruct := DeviceListRevProxy{Devices: devices, Prefix: prefix}
 	templ := template.Must(template.New("devsGet").Parse(tmpbl))
-	templ.Execute(w, devices)
+	templ.Execute(w, templateStruct)
 }
 
 func handleDeviceGet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -227,6 +229,7 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		}
 	}
 	aliasType, err := registerOrUpdateDevice(formAlias, r.FormValue("macAddr"), r.FormValue("ipAddr")) //updating device or creating a new one
+	aliasFull := types.DevPageAlias{Alias: *aliasType, Prefix: prefix}
 
 	if err != nil {
 		log.Errorf("Wrong password? %v", err)
@@ -240,7 +243,7 @@ func handleDevicePost(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		return
 	}
 	templ := template.Must(template.New("addDevSucc").Parse(tmpbl))
-	templ.Execute(w, aliasType)
+	templ.Execute(w, aliasFull)
 }
 
 func handlePing(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -274,19 +277,19 @@ func handlePing(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 func handleConfigGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if initialized {
-		tmpbl, err := templateBox.String("config-update.html")
+		tmpbl, err := templateBox.String("config-update.gohtml")
 		if err != nil {
 			handleError(w, r, err, http.StatusUnprocessableEntity)
 		}
 		templ := template.Must(template.New("conf-upd").Parse(tmpbl))
-		templ.Execute(w, nil)
+		templ.Execute(w, prefix)
 	} else {
-		tmpbl, err := templateBox.String("config.html")
+		tmpbl, err := templateBox.String("config.gohtml")
 		if err != nil {
 			handleError(w, r, err, http.StatusUnprocessableEntity)
 		}
 		templ := template.Must(template.New("conf").Parse(tmpbl))
-		templ.Execute(w, nil)
+		templ.Execute(w, prefix)
 	}
 }
 

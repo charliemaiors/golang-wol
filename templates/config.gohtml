@@ -1,5 +1,6 @@
 <html lang="en" >
     <head>
+      {{ with . }}
       <title>Remote Wake/Sleep-On-LAN</title>
       <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
       <meta name="description" content="A utility for remotely waking/sleeping a Windows computer via a Raspberry Pi">
@@ -43,12 +44,14 @@
         </style>
         <!-- jQuery!!! -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
         <script>
             $(document).ready(function(){
-                $("#home").href = window.location.href;
-                $("#dev").href = window.location.href + "devices";
-                $("#addDev").href = window.location.href + "manage-dev";
-                $("#config").href = window.location.href + "devices";
+                $("#home").href = window.location.hostname + {{ . }};
+                $("#dev").href = window.location.hostname + "/devices";
+                $("#addDev").href = window.location.hostname + "/manage-dev";
+                $("#config").href = window.location.href;
+                $("#configForm").attr('action',window.location.href)
             })
         </script>
         
@@ -64,6 +67,7 @@
         <!--[if lt IE 9]> 
         <script src="style/bootstrap/js/html5shiv.js"></script>
         <![endif]-->
+        {{ end }}
     </head>
     <body>
         <nav class="navbar navbar-default">
@@ -95,19 +99,13 @@
             </div><!-- /.container-fluid -->
         </nav>
         <div class="container-fluid">
-            <form class="form-horizontal" action="/config" method="POST">
+            <form class="form-horizontal" id="configForm" action="/config" method="POST">
                 <h2 class="form-horizontal-heading">Configuration</h2>
                 <p class="form-horizontal-heading">Please insert initial password in order to configure the application</p>
                 <div class="form-group row">
-                    <label class="col-sm-5 control-label">Old password:</label>
+                    <label class="col-sm-5 control-label">Configuration Password:</label>
                     <div class="col-sm-6">
-                        <input type="password" class="form-control" name="oldPassword" id="configPassword" placeholder="Old Password">
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label class="col-sm-5 control-label">New password:</label>
-                    <div class="col-sm-6">
-                        <input type="password" class="form-control" name="newPassword" id="configPassword" placeholder="New Password">
+                        <input type="password" class="form-control" name="password" id="configPassword" placeholder="Password">
                     </div>
                 </div>
                 <div class="form-group">
