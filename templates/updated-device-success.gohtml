@@ -35,10 +35,10 @@
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
             <script>
             $(document).ready(function(){
-                $("#home").href = window.location.hostname + {{ .Prefix }};
-                $("#dev").href = window.location.href;
-                $("#addDev").href = window.location.hostname + {{ .Prefix }} + "/manage-dev";
-                $("#config").href = window.location.hostname + {{ .Prefix }} + "/config";
+                $("#home").attr('href', window.location.hostname + {{ .Prefix }});
+                $("#dev").attr('href',window.location.href);
+                $("#addDev").attr('href', window.location.hostname + {{ .Prefix }} + "/manage-dev");
+                $("#config").attr('href',window.location.hostname + {{ .Prefix }} + "/config");
             })
         </script>
             

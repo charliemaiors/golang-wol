@@ -101,10 +101,10 @@
       </script>
       <script>
         $(document).ready(function(){
-            $("#home").href = window.location.href;
-            $("#dev").href = window.location.href + "devices";
-            $("#addDev").href = window.location.href + "manage-dev";
-            $("#config").href = window.location.href + "devices";
+            $("#home").attr('href', window.location.href);
+            $("#dev").attr('href', window.location.href + "devices");
+            $("#addDev").attr('href',window.location.href + "manage-dev");
+            $("#config").attr('href',window.location.href + "devices");
             $("#wake-form").attr('action',window.location.href)
         })
       </script>

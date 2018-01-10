@@ -48,10 +48,10 @@
         {{ with . }}
             <script>
                 $(document).ready(function(){
-                    $("#home").href = window.location.hostname + {{ . }};
-                    $("#dev").href = window.location.hostname + {{ . }} + "/devices";
-                    $("#addDev").href = window.location.href;
-                    $("#config").href = window.location..hostname + {{ . }} + "/config";
+                    $("#home").attr('href', window.location.hostname + {{ . }});
+                    $("#dev").attr('href', window.location.hostname + {{ . }} + "/devices");
+                    $("#addDev").attr('href', window.location.href);
+                    $("#config").attr('href',window.location..hostname + {{ . }} + "/config");
                     $("#mngDev").attr('action',window.location.href)
                 })
             </script>
