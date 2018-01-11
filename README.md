@@ -49,7 +49,7 @@ server:
 
 ## Service
 ---
-This service could be defined as Linux systemd service or windows service using files under script directory.
+This service could be defined as Linux systemd service or windows service using files under script directory. In order to install on linux, copy ```scripts/rwol.service``` in ``` /lib/systemd/system/``` folder and then run  ```#systemctl enable rwol; systemctl start rwol ```. Regarding Windows Service open an elevated powershell and run ```scripts/win-service-install.ps1```, it will check if [Chocolatey](https://chocolatey.org/) is installed and then install [nssm](https://nssm.cc/) in order to define rwol as service.
 
 ## Reverse Proxy
 ---
@@ -58,10 +58,12 @@ This service could be installed also behind a reverse proxy defining in the conf
 
 ```yaml
 server:
-    proxy: true
+    proxy: 
+       enabled: true
+       prefix: <reverse-proxy-prefix>
 ```
 
-And configure your apache reverse proxy in this way (nginx configuration will be defined as soon as I've spare time)
+And configure your apache reverse proxy in this way
 
 ```
 <IfModule mod_ssl.c>
@@ -73,10 +75,10 @@ And configure your apache reverse proxy in this way (nginx configuration will be
                 SSLCertificateFile /etc/openssl/cert.pem
                 SSLCertificateKeyFile /etc/openssl/key.pem
 
-                ProxyPass /prefix http://localhost:5000
+                ProxyPass /prefix http://localhost:5000/prefix
                 ProxyHTMLURLMap http://localhost:5000 /prefix
                 <Location /wol/>
-                        ProxyPassReverse  http://localhost:5000
+                        ProxyPassReverse  http://localhost:5000/prefix
                         SetOutputFilter proxy-html
                         ProxyHTMLURLMap /          /prefix/
                         ProxyHTMLURLMap /prefix      /prefix #avoid infinite loop
@@ -86,6 +88,29 @@ And configure your apache reverse proxy in this way (nginx configuration will be
 ```
 
 Apache required modules are: ```mod_proxy```,  ```mod_proxy_html ``` and ```mod_ssl``` if the reverse proxy uses ssl.
+
+Nginx must be configured in order to have a longer timeout period for reverse proxy adding the following snippet to nginx.conf file under http section
+
+```
+    proxy_connect_timeout       600;
+    proxy_send_timeout          600;
+    proxy_read_timeout          600;
+    send_timeout                600;
+```
+
+After that you could add your reverse proxy configuration to your site, using this snippet
+
+```
+    location /prefix {
+        proxy_pass http://localhost:5000/prefix;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        add_header X-Forwarded-Scheme https;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header Host $host;
+    }
+```
 
  ## Docker
 ---

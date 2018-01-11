@@ -5,10 +5,10 @@ After=network.target
 
 [Service]
 Type=simple
-User=root #needed in order to use letsencrypt
+User=root
 Group=root
-WorkingDirectory=/home/user #is not mandatory
-ExecStart=/home/user/go/bin/golang-wol
+WorkingDirectory=/home/<your-user>
+ExecStart=/home/<your-user>/go/bin/golang-wol
 Restart=always
 
 [Install]
