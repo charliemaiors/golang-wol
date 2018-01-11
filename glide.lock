@@ -1,8 +1,8 @@
 hash: 8cea5a9b9d5bfaaa30847a7e997706be4e471bea4ad8e85afa4221e48512240e
-updated: 2018-01-11T07:47:18.81999887Z
+updated: 2018-01-11T10:46:53.455223141Z
 imports:
 - name: github.com/charliemaiors/go-fastping
-  version: f132713ce548725da734ddf1f5141e3cc64cdb27
+  version: 3dc85a6b602806e06d9f0b8461ff4c289778a66a
 - name: github.com/coreos/bbolt
   version: 48ea1b39c25fc1bab3506fbc712ecbaa842c4d2d
 - name: github.com/daaku/go.zipexe
@@ -55,7 +55,7 @@ imports:
 - name: github.com/technoweenie/multipartstreamer
   version: a90a01d73ae432e2611d178c18367fbaa13e0154
 - name: golang.org/x/crypto
-  version: b3c9a1d25cfbbbab0ff4780b71c4f54e6e92a0de
+  version: 5f55bce93ad2c89f411e009659bb1fd83da36e7b
   subpackages:
   - acme
   - acme/autocert

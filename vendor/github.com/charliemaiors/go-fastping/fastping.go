@@ -372,9 +372,7 @@ func (p *Pinger) Done() <-chan bool {
 // panic.
 func (p *Pinger) Stop() {
 	p.debugln("Stop(): close(p.ctx.stop)")
-	if _, ok := <-p.ctx.stop; ok {
-		close(p.ctx.stop)
-	}
+	close(p.ctx.stop)
 	p.debugln("Stop(): <-p.ctx.done")
 	if _, ok := <-p.ctx.done; ok {
 		close(p.ctx.done)
