@@ -373,7 +373,7 @@ func handleConfigUpdate(w http.ResponseWriter, r *http.Request) {
 
 func handleRootGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if !initialized {
-		http.Redirect(w, r, "/config", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, prefix+"/config", http.StatusTemporaryRedirect)
 		return
 	}
 	tmpbl, err := templateBox.String("index.gohtml")
