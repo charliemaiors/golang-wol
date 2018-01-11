@@ -120,13 +120,13 @@ func handleManageDevicePost(w http.ResponseWriter, r *http.Request, _ httprouter
 	}
 
 	alias, regErr := registerOrUpdateDevice(r.FormValue("alias"), r.FormValue("macAddr"), r.FormValue("ipAddr"))
-	aliasDef := types.DevPageAlias{Alias: *alias, Prefix: prefix}
 	if regErr != nil {
 		log.Errorf("Error registering %v", regErr)
 		handleError(w, r, err, http.StatusUnprocessableEntity)
 		return
 	}
 
+	aliasDef := types.DevPageAlias{Alias: *alias, Prefix: prefix}
 	tmpbl, err := templateBox.String("add-device-success.gohtml")
 	if err != nil {
 		handleError(w, r, err, http.StatusUnprocessableEntity)
