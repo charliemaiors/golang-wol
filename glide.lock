@@ -1,14 +1,14 @@
 hash: 8cea5a9b9d5bfaaa30847a7e997706be4e471bea4ad8e85afa4221e48512240e
-updated: 2018-01-09T13:55:59.14677352Z
+updated: 2018-01-11T07:47:18.81999887Z
 imports:
 - name: github.com/charliemaiors/go-fastping
-  version: 8b7c490808526bf1dc24fbc0d467ae9f88b518a8
+  version: f132713ce548725da734ddf1f5141e3cc64cdb27
 - name: github.com/coreos/bbolt
   version: 48ea1b39c25fc1bab3506fbc712ecbaa842c4d2d
 - name: github.com/daaku/go.zipexe
   version: a5fe2436ffcb3236e175e5149162b41cd28bd27d
 - name: github.com/fsnotify/fsnotify
-  version: 4da3e2cfbabc9f751898f250b49f2439785783a1
+  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
 - name: github.com/GeertJohan/go.rice
   version: c02ca9a983da5807ddf7d796784928f5be4afd09
   subpackages:
@@ -33,7 +33,7 @@ imports:
 - name: github.com/magiconair/properties
   version: 49d762b9817ba1c2e9d0c69183c2b4a8b8f1d934
 - name: github.com/mitchellh/mapstructure
-  version: 06020f85339e21b2478f756a78e295255ffa4d6a
+  version: b4575eea38cca1123ec2dc90c26529b5c5acfcff
 - name: github.com/pelletier/go-toml
   version: 0131db6d737cfbbfb678f8b7d92e55e27ce46224
 - name: github.com/sabhiram/go-wol
@@ -47,7 +47,7 @@ imports:
 - name: github.com/spf13/cast
   version: acbeb36b902d72a7a4c18e8f3241075e7ab763e4
 - name: github.com/spf13/jwalterweatherman
-  version: 12bd96e66386c1960ab0f74ced1362f66f552f7b
+  version: 7c0cea34c8ece3fbeb2b27ab9b59511d360fb394
 - name: github.com/spf13/pflag
   version: 4c012f6dcd9546820e378d0bdda4d8fc772cdfea
 - name: github.com/spf13/viper
@@ -55,7 +55,7 @@ imports:
 - name: github.com/technoweenie/multipartstreamer
   version: a90a01d73ae432e2611d178c18367fbaa13e0154
 - name: golang.org/x/crypto
-  version: 0fcca4842a8d74bfddc2c96a073bd2a4d2a7a2e8
+  version: b3c9a1d25cfbbbab0ff4780b71c4f54e6e92a0de
   subpackages:
   - acme
   - acme/autocert
@@ -63,7 +63,7 @@ imports:
   - blowfish
   - ssh/terminal
 - name: golang.org/x/net
-  version: 434ec0c7fe3742c984919a691b2018a6e9694425
+  version: ab555f366c4508dbe0802550b1b20c46c5c18aa0
   subpackages:
   - bpf
   - icmp
@@ -72,7 +72,7 @@ imports:
   - ipv4
   - ipv6
 - name: golang.org/x/sys
-  version: d38bf781f16e180a1b2ad82697d2f81d7b7ecfac
+  version: 810d7000345868fc619eb81f46307107118f4ae1
   subpackages:
   - unix
   - windows
