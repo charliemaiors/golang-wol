@@ -46,30 +46,30 @@
             }
       </style>
       <script>
-         $("#dvcslt").change(function(){
-            $.ajax({
-                async: false,
-                type:"POST",
-                url: window.location.href + "ping/" + $("option:selected"),
-                dataType: "json"
-            }).done(function(data){
-                if (data["message"]){
-                    $("label[for='wake']").html("alive")
-                    $("label[for='wake']").css("color","green")
-                    $("#sbmbtn").text("Turn Off")
-                } else {
-                    $("label[for='wake']").html("asleep")
-                    $("label[for='wake']").css("color","red")
+        $(function(ready){
+            $("#dvcslt").change(function(){
+                alert("Changed");
+                $.ajax({
+                    async: false,
+                    type:"POST",
+                    url: window.location.href + "ping/" + $('#dvcslt').find(":selected").text(),
+                    dataType: "json"
+                }).done(function(data){
+                    if (data["message"]){
+                        $("label[for='wake']").html("alive");
+                        $("label[for='wake']").css("color","green");
+                        $("#sbmbtn").text("Turn Off");
+                    } else {
+                        $("label[for='wake']").html("asleep");
+                        $("label[for='wake']").css("color","red");
+                        $("#sbmbtn").text("WakeUp");
+                    }
+                }).fail(function(){
+                    console.log('Got fail!!!!')
                     $("#sbmbtn").text("WakeUp")
-                }
-                $("#recapDiv").show()
-                $("#sbmbtn").show()
-            }).fail(function(){
-                console.log('Got fail!!!!')
-                $("#sbmbtn").text("WakeUp")
-                $("#sbmbtn").show()
-            })
-         })
+                });
+            });
+        });
       </script>
       <script>
         $(document).ready(function(){
