@@ -36,7 +36,9 @@
             <script>
             $(document).ready(function(){
                 $("#home").attr('href', window.location.protocol + "//" + window.location.host + {{ .Prefix }});
+                $("#homeSuccess").attr('href', window.location.protocol + "//" + window.location.host + {{ .Prefix }});
                 $("#dev").attr('href',window.location.href);
+                $("#listSuccess").attr('href',window.location.href);
                 $("#addDev").attr('href', window.location.protocol + "//" + window.location.host + {{ .Prefix }} + "/manage-dev");
                 $("#config").attr('href', window.location.protocol + "//" + window.location.host + {{ .Prefix }} + "/config");
             })
@@ -74,8 +76,9 @@
                         <ul class="nav navbar-nav">
                         <li><a id="home" href="/">Home<span class="sr-only">(current)</span></a></li>
                         <li class="active dropdown">
-                            <a id="dev" href="/devices" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Devices<span class="caret"></span></a>
+                            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Devices<span class="caret"></span></a>
                             <ul class="dropdown-menu">
+                            <li><a id="dev" href="/devices">List</a></li>
                             <li><a id="addDev" href="/manage-dev">Add Device</a></li>
                             </ul>
                         </li>
@@ -88,7 +91,7 @@
                 <div class = "jumbotron">
                     <h2>Updated device successfully!!!</h2>
                     <p>Now device is Name: {{ .Alias.Name }} Mac: {{ .Alias.Device.Mac }}  IP: {{ .Alias.Device.IP }}</p>
-                    <h4>Now return to <a href="/">home</a> in order to wake up your device or <a href="/devices">list</a> all devices</h4>
+                    <h4>Now return to <a id="homeSuccess" href="/">home</a> in order to wake up your device or <a id="listSuccess" href="/devices">list</a> all devices</h4>
                 </div>
             </div>
         </body>
