@@ -1,0 +1,13 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+
+install:
+  - docker version
+
+build_script:
+  - docker build -t cmaiorano/golang-wol:win -f Dockerfile.win
+
+
+deploy_script:
+  - docker login -u="$env:DOCKER_USER" -p="$env:DOCKER_PASS"
+  - docker push cmaiorano/golang-wol:win
