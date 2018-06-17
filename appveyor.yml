@@ -1,6 +1,12 @@
 version: 1.0.{build}
 image: Visual Studio 2017
 
+environment:
+  DOCKER_USER:
+    secure: /ZP0tPTchFWuKe317vzIag==
+  DOCKER_PASS:
+    secure: cXdCiQf/o+iYoq6W5X810w==
+
 install:
   - docker version
 
