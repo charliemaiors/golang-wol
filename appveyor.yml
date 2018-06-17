@@ -5,7 +5,7 @@ install:
   - docker version
 
 build_script:
-  - docker build -t cmaiorano/golang-wol:win -f Dockerfile.win
+  - docker build -t cmaiorano/golang-wol:win -f Dockerfile.win .
 
 
 deploy_script:
