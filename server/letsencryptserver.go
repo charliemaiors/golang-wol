@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	"github.com/charliemaiors/golang-wol/bot"
 	"github.com/charliemaiors/golang-wol/storage"
 	"github.com/charliemaiors/golang-wol/utils"
 
@@ -17,7 +16,7 @@ type LetsEncryptServer struct {
 }
 
 //StartLetsEncrypt spawn a https web server powered by letsencrypt certificates
-func (srv *LetsEncryptServer) Start(alreadyInit, reverseProxy, telegram bool, proxyPrefix, command, port string) {
+func (srv *LetsEncryptServer) Start(alreadyInit, reverseProxy bool, proxyPrefix, command, port string) {
 	initialized = alreadyInit
 	prefix = proxyPrefix
 
@@ -28,10 +27,6 @@ func (srv *LetsEncryptServer) Start(alreadyInit, reverseProxy, telegram bool, pr
 
 	if initialized {
 		go storage.StartHandling(deviceChan, getChan, delDevChan, passHandlingChan, updatePassChan, aliasRequestChan)
-	}
-
-	if telegram { //telegram bot does not require any password because of the authorized user
-		go bot.RunBot(deviceChan, getChan, delDevChan, aliasRequestChan)
 	}
 
 	if reverseProxy {
