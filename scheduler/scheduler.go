@@ -1,7 +1,12 @@
 package scheduler
 
-//github.com/jasonlvhit/gocron
+type Action int
+
+const (
+	WakeUp Action = iota
+	Shutdown
+)
 
 type Scheduler interface {
-	Schedule()
+	Schedule(hour, minutes, device string, action Action) error
 }
