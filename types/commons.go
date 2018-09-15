@@ -2,6 +2,13 @@ package types
 
 import "time"
 
+type Action int
+
+const (
+	WakeUp Action = iota
+	TurnOff
+)
+
 //Device is the simple rapresentation of a remote device target of wake up
 type Device struct {
 	Mac string
