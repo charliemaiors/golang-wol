@@ -4,6 +4,14 @@ import (
 	storage "github.com/coreos/bbolt"
 )
 
+const (
+	devicesBucket  = "DevBucket"
+	passwordBucket = "PassBucket"
+	passworkdKey   = "AdminPassword"
+	dbName         = "rwol.db"
+	defaultDbLoc   = "storage"
+)
+
 type BboltDeviceAccessor struct {
 	db *storage.DB
 }

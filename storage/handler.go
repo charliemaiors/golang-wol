@@ -6,14 +6,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	devicesBucket  = "DevBucket"
-	passwordBucket = "PassBucket"
-	passworkdKey   = "AdminPassword"
-	dbName         = "rwol.db"
-	defaultDbLoc   = "storage"
-)
-
 var db *storage.DB
 
 func init() {

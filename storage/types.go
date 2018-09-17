@@ -7,7 +7,7 @@ import (
 )
 
 type DeviceAccessor interface {
-	AddDevice(dev *types.Device)
+	AddDevice(dev *types.Device, name string)
 	GetDevice(alias string) *types.Device
 	DeleteDevice(alias string) error
 }
