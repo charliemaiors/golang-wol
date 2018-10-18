@@ -7,31 +7,32 @@ import (
 const (
 	devicesBucket  = "DevBucket"
 	passwordBucket = "PassBucket"
+	scheduleBucket = "SchedBucket"
 	passworkdKey   = "AdminPassword"
 	dbName         = "rwol.db"
 	defaultDbLoc   = "storage"
 )
 
 type BboltDeviceAccessor struct {
-	db *storage.DB
+	reqdb chan func(*storage.DB)
 }
 
 type BboltPasswordAccessor struct {
-	db *storage.DB
+	reqdb chan func(*storage.DB)
 }
 
 type BboltSchedulerAccessor struct {
-	db *storage.DB
+	reqdb chan func(*storage.DB)
 }
 
-func newBboltDeviceAccessor(db *storage.DB) BboltDeviceAccessor {
-	return BboltDeviceAccessor{db: db}
+func newBboltDeviceAccessor(db chan func(*storage.DB)) BboltDeviceAccessor {
+	return BboltDeviceAccessor{reqdb: db}
 }
 
-func newBboltPasswordAccessor(db *storage.DB) BboltPasswordAccessor {
-	return BboltPasswordAccessor{db: db}
+func newBboltPasswordAccessor(db chan func(*storage.DB)) BboltPasswordAccessor {
+	return BboltPasswordAccessor{reqdb: db}
 }
 
-func newBboltSchedulerAccessor(db *storage.DB) BboltSchedulerAccessor {
-	return BboltSchedulerAccessor{db: db}
+func newBboltSchedulerAccessor(db chan func(*storage.DB)) BboltSchedulerAccessor {
+	return BboltSchedulerAccessor{reqdb: db}
 }
