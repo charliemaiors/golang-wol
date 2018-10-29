@@ -17,13 +17,15 @@ before_install:
 - sudo apt-get -y install docker-ce zip
 before_script:
 - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-- mkdir -p bin/x86 bin/osx bin/win bin/arm
+- mkdir -p bin/linux-x86 bin/osx bin/win bin/linux-arm bin/freebsd-x86 bin/freebsd-arm
 script:
 - go get -v ./...
-- GOOS="linux" go build -v -o bin/x86/golang-wol wolsrv.go
+- GOOS="linux" go build -v -o bin/linux-x86/golang-wol wolsrv.go
 - GOOS="darwin" go build -v -o bin/osx/golang-wol wolsrv.go
 - GOOS="windows" go build -v -o bin/win/golang-wol.exe wolsrv.go
-- GOOS="linux" GOARCH=arm go build -v -o bin/arm/golang-wol wolsrv.go
+- GOOS="freebsd" go build -v -o bin/freebsd-x86/golang-wol wolsrv.go
+- GOOS="linux" GOARCH="arm" go build -v -o bin/linux-arm/golang-wol wolsrv.go
+- GOOS="freebsd" GOARCH="arm" go build -v -o bin/freebsd-arm/golang-wol wolsrv.go
 - docker build -t cmaiorano/golang-wol:x86 -f Dockerfile.x86 .
 - docker run --rm --privileged multiarch/qemu-user-static:register --reset
 - docker build -t cmaiorano/golang-wol:arm -f Dockerfile.arm .
@@ -31,10 +33,12 @@ after_success:
 - docker push cmaiorano/golang-wol:x86
 - docker push cmaiorano/golang-wol:arm
 before_deploy:
-- zip -r bin/golang-wol-x86.zip bin/x86/
+- zip -r bin/golang-wol-linux-x86.zip bin/x86/
 - zip -r bin/golang-wol-osx.zip bin/osx/
 - zip -r bin/golang-wol-win.zip bin/win/
-- zip -r bin/golang-wol-arm.zip bin/arm/
+- zip -r bin/golang-wol-linux-arm.zip bin/arm/
+- zip -r bin/golang-wol-freebsd-x86.zip bin/freebsd-x86/
+- zip -r bin/golang-wol-freebsd-arm.zip bin/freebsd-arm/
 deploy:
   provider: releases
   api_key: "$GITHUB_TOKEN"
