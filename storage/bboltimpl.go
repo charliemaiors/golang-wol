@@ -201,3 +201,7 @@ func (accessor *BboltSchedulerAccessor) ScheduleOperation(alias string, action t
 
 	return <-errChan
 }
+
+func (accessor *BboltSchedulerAccessor) GetAllOperations(aliases []string) map[ActionSubject]time.Time {
+	return nil
+}
