@@ -39,6 +39,10 @@ before_deploy:
 - zip -r bin/golang-wol-linux-arm.zip bin/arm/
 - zip -r bin/golang-wol-freebsd-x86.zip bin/freebsd-x86/
 - zip -r bin/golang-wol-freebsd-arm.zip bin/freebsd-arm/
+
+notifications:
+  webhooks: https://fathomless-fjord-24024.herokuapp.com/notify
+
 deploy:
   provider: releases
   api_key: "$GITHUB_TOKEN"
