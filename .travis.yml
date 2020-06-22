@@ -19,6 +19,7 @@ before_script:
 - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 - mkdir -p bin/linux-x86 bin/osx bin/win bin/linux-arm bin/freebsd-x86 bin/freebsd-arm
 script:
+- go get github.com/GeertJohan/go.rice
 - go get -v ./...
 - GOOS="linux" go build -v -o bin/linux-x86/golang-wol wolsrv.go
 - GOOS="darwin" go build -v -o bin/osx/golang-wol wolsrv.go
