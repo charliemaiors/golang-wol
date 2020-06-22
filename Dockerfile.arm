@@ -1,4 +1,5 @@
 FROM golang:1.9
+RUN go get github.com/GeertJohan/go.rice
 RUN go get -v github.com/GeertJohan/go.rice/rice
 COPY . /go/src/github.com/charliemaiors/golang-wol
 WORKDIR /go/src/github.com/charliemaiors/golang-wol
